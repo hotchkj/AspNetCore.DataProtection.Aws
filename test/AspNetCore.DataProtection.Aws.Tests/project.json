@@ -1,5 +1,5 @@
 {
-  "summary": "ASP.NET S3 DataProtection Repository Integration Tests",
+  "summary": "ASP.NET DataProtection Repository Integration Tests",
   "licenseUrl": "https://opensource.org/licenses/MIT",
   "owners": [ "hotchkj" ],
   "authors": [ "hotchkj" ],
@@ -14,6 +14,7 @@
   },
 
   "dependencies": {
+    "AspNetCore.DataProtection.Aws.Kms": "",
     "AspNetCore.DataProtection.Aws.S3": "",
     "Moq": "4.5.8",
     "xunit": "2.1.0"

@@ -1,12 +1,12 @@
-﻿using System;
+﻿// Copyright(c) 2016 Jeff Hotchkiss
+// Licensed under the MIT License. See License.md in the project root for license information.
+using Amazon.KeyManagementService;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.DataProtection.Repositories;
-using Amazon.S3;
-// Copyright(c) 2016 Jeff Hotchkiss
-// Licensed under the MIT License. See License.md in the project root for license information.
+using Microsoft.AspNet.DataProtection.XmlEncryption;
+using System;
 
-namespace AspNetCore.DataProtection.Aws.S3
+namespace AspNetCore.DataProtection.Aws.Kms
 {
     /// <summary>
     /// Extensions for configuring data protection using an <see cref="IDataProtectionBuilder"/>.
@@ -17,22 +17,22 @@ namespace AspNetCore.DataProtection.Aws.S3
     public static class DataProtectionBuilderExtensions
     {
         /// <summary>
-        /// Configures the data protection system to persist keys to a specified S3 bucket.
+        /// Configures the data protection system to encrypt keys using AWS Key Management Service master keys
         /// </summary>
         /// <param name="builder">The <see cref="DataProtectionConfiguration"/>.</param>
-        /// <param name="s3Client">S3 client configured with appropriate credentials.</param>
-        /// <param name="config">The configuration object specifying how to write to S3.</param>
+        /// <param name="kmsClient">KMS client configured with appropriate credentials.</param>
+        /// <param name="config">The configuration object specifying how use KMS keys.</param>
         /// <returns>A reference to the <see cref="DataProtectionConfiguration" /> after this operation has completed.</returns>
-        public static DataProtectionConfiguration PersistKeysToAwsS3(this DataProtectionConfiguration builder, IAmazonS3 s3Client, S3XmlRepositoryConfig config)
+        public static DataProtectionConfiguration ProtectKeysWithAwsKms(this DataProtectionConfiguration builder, IAmazonKeyManagementService kmsClient, KmsXmlEncryptorConfig config)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (s3Client == null)
+            if (kmsClient == null)
             {
-                throw new ArgumentNullException(nameof(s3Client));
+                throw new ArgumentNullException(nameof(kmsClient));
             }
 
             if (config == null)
@@ -40,17 +40,17 @@ namespace AspNetCore.DataProtection.Aws.S3
                 throw new ArgumentNullException(nameof(config));
             }
 
-            Use(builder.Services, ServiceDescriptor.Singleton<IXmlRepository>(services => new S3XmlRepository(s3Client, config, services)));
+            Use(builder.Services, ServiceDescriptor.Singleton<IXmlEncryptor>(services => new KmsXmlEncryptor(kmsClient, config, services)));
             return builder;
         }
 
         /// <summary>
-        /// Configures the data protection system to persist keys to a specified S3 bucket.
+        /// Configures the data protection system to encrypt keys using AWS Key Management Service master keys
         /// </summary>
         /// <param name="builder">The <see cref="DataProtectionConfiguration"/>.</param>
-        /// <param name="config">The configuration object specifying how to write to S3.</param>
+        /// <param name="config">The configuration object specifying how use KMS keys.</param>
         /// <returns>A reference to the <see cref="DataProtectionConfiguration" /> after this operation has completed.</returns>
-        public static DataProtectionConfiguration PersistKeysToAwsS3(this DataProtectionConfiguration builder, S3XmlRepositoryConfig config)
+        public static DataProtectionConfiguration ProtectKeysWithAwsKms(this DataProtectionConfiguration builder, KmsXmlEncryptorConfig config)
         {
             if (builder == null)
             {
@@ -62,7 +62,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                 throw new ArgumentNullException(nameof(config));
             }
 
-            Use(builder.Services, ServiceDescriptor.Singleton<IXmlRepository>(services => new S3XmlRepository(services.GetRequiredService<IAmazonS3>(), config, services)));
+            Use(builder.Services, ServiceDescriptor.Singleton<IXmlEncryptor>(services => new KmsXmlEncryptor(services.GetRequiredService<IAmazonKeyManagementService>(), config, services)));
             return builder;
         }
 

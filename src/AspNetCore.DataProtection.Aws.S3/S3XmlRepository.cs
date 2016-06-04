@@ -1,4 +1,6 @@
-﻿using Amazon.S3;
+﻿// Copyright(c) 2016 Jeff Hotchkiss
+// Licensed under the MIT License. See License.md in the project root for license information.
+using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Microsoft.Extensions.DependencyInjection;
@@ -93,7 +95,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                     Prefix = Config.KeyPrefix,
                     ContinuationToken = response?.NextContinuationToken
                 },
-                ct);
+                ct).ConfigureAwait(false);
 
                 items.AddRange(response.S3Objects);
             }
@@ -109,7 +111,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                 queries.Add(GetElementFromKey(item, throttler, ct));
             }
 
-            await Task.WhenAll(queries);
+            await Task.WhenAll(queries).ConfigureAwait(false);
 
             return new ReadOnlyCollection<XElement>(queries.Select(x => x.Result).ToList());
         }
@@ -171,7 +173,8 @@ namespace AspNetCore.DataProtection.Aws.S3
                     AutoResetStreamPosition = true,
                     AutoCloseStream = true,
                     MD5Digest = md5,
-                    ContentType = "text/xml"
+                    ContentType = "text/xml",
+                    StorageClass = Config.StorageClass
                 }, ct).ConfigureAwait(false);
             }
         }

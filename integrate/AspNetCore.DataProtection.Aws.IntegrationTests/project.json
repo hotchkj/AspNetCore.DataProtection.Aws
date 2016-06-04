@@ -1,5 +1,5 @@
 {
-  "summary": "ASP.NET S3 DataProtection Repository Integration Tests",
+  "summary": "ASP.NET DataProtection Repository Integration Tests",
   "licenseUrl": "https://opensource.org/licenses/MIT",
   "owners": [ "hotchkj" ],
   "authors": [ "hotchkj" ],
@@ -10,11 +10,12 @@
   },
 
   "commands": {
-    "test": "xunit.runner.dnx -parallel all"
+    "integrate": "xunit.runner.dnx -parallel all"
   },
 
   "dependencies": {
     "AspNetCore.DataProtection.Aws.S3": "",
+    "AspNetCore.DataProtection.Aws.Kms": "",
     "xunit": "2.1.0"
   },
 

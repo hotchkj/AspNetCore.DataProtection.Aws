@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright(c) 2016 Jeff Hotchkiss
+// Licensed under the MIT License. See License.md in the project root for license information.
+using Amazon.S3;
+using System;
 
 namespace AspNetCore.DataProtection.Aws.S3
 {
@@ -9,10 +12,12 @@ namespace AspNetCore.DataProtection.Aws.S3
             Bucket = bucketName;
             KeyPrefix = "DataProtection-Keys/";
             MaxS3QueryConcurrency = 10;
+            StorageClass = S3StorageClass.Standard;
         }
 
         public string Bucket { get; set; }
         public int MaxS3QueryConcurrency { get; set; }
+        public S3StorageClass StorageClass { get; set; }
         public string KeyPrefix
         {
             get

@@ -1,4 +1,6 @@
-﻿using Amazon;
+﻿// Copyright(c) 2016 Jeff Hotchkiss
+// Licensed under the MIT License. See License.md in the project root for license information.
+using Amazon;
 using Amazon.S3;
 using AspNetCore.DataProtection.Aws.S3;
 using System;
