@@ -20,41 +20,29 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <summary>
         /// Creates a <see cref="KmsXmlDecryptor"/> for decrypting ASP.NET keys with a KMS master key
         /// </summary>
-        /// <param name="kmsClient">The KMS client.</param>
-        /// <param name="config">The configuration object specifying which key data in KMS to use.</param>
-        public KmsXmlDecryptor(IAmazonKeyManagementService kmsClient, KmsXmlDecryptorConfig config)
-            : this(kmsClient, config, services: null)
+        /// <remarks>
+        /// DataProtection has a fairly awful way of making the IXmlDecryptor that by default never just does
+        /// GetRequiredService<IXmlDecryptor>, instead calling the IServiceProvider constructor directly.
+        /// This means we have to do the resolution of needed objects via DI.
+        /// </remarks>
+        /// <param name="services">A mandatory <see cref="IServiceProvider"/> to provide services.</param>
+        public KmsXmlDecryptor(IServiceProvider services)
         {
-        }
-
-        /// <summary>
-        /// Creates a <see cref="KmsXmlDecryptor"/> for decrypting ASP.NET keys with a KMS master key
-        /// </summary>
-        /// <param name="kmsClient">The KMS client.</param>
-        /// <param name="config">The configuration object specifying which key data in KMS to use.</param>
-        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public KmsXmlDecryptor(IAmazonKeyManagementService kmsClient, KmsXmlDecryptorConfig config, IServiceProvider services)
-        {
-            if (kmsClient == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(kmsClient));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
-
-            KmsClient = kmsClient;
-            Config = config;
+            KmsClient = services.GetRequiredService<IAmazonKeyManagementService>();
+            Config = services.GetRequiredService<KmsXmlEncryptorConfig>();
             Services = services;
-            _logger = services?.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlDecryptor>();
+            _logger = services.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlDecryptor>();
         }
 
         /// <summary>
         /// The configuration of how KMS will decrypt the XML data.
         /// </summary>
-        public KmsXmlDecryptorConfig Config { get; }
+        public KmsXmlEncryptorConfig Config { get; }
 
         /// <summary>
         /// The <see cref="IServiceProvider"/> provided to the constructor.

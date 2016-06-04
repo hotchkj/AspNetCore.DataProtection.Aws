@@ -13,28 +13,24 @@ using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
-    public class KmsCryptographyTests : IDisposable
+    public class KmsEncryptorTests : IDisposable
     {
         private readonly KmsXmlEncryptor encryptor;
-        private readonly KmsXmlDecryptor decryptor;
         private readonly MockRepository repository;
         private readonly Mock<IAmazonKeyManagementService> kmsClient;
         private readonly KmsXmlEncryptorConfig encryptConfig;
-        private readonly KmsXmlDecryptorConfig decryptConfig;
         private const string AppName = "appName";
         private const string KeyId = "keyId";
         private const string ElementName = "name";
 
-        public KmsCryptographyTests()
+        public KmsEncryptorTests()
         {
             encryptConfig = new KmsXmlEncryptorConfig(AppName, KeyId);
-            decryptConfig = new KmsXmlDecryptorConfig(AppName);
 
             repository = new MockRepository(MockBehavior.Strict);
             kmsClient = repository.Create<IAmazonKeyManagementService>();
 
             encryptor = new KmsXmlEncryptor(kmsClient.Object, encryptConfig);
-            decryptor = new KmsXmlDecryptor(kmsClient.Object, decryptConfig);
         }
 
         public void Dispose()
@@ -75,39 +71,6 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                 Assert.Equal(typeof(KmsXmlDecryptor), encryptedXml.DecryptorType);
                 var encryptedBlob = (string)encryptedXml.EncryptedElement.Element("value");
                 Assert.Equal(myBase64EncryptedData, encryptedBlob);
-            }
-        }
-
-        [Fact]
-        public void ExpectDecryptToSucceed()
-        {
-            var myEncryptedString = "encrypted";
-            var myBase64EncryptedData = Convert.ToBase64String(Encoding.UTF8.GetBytes(myEncryptedString));
-            var myEncryptedXml = new XElement(ElementName, new XElement("value", myBase64EncryptedData));
-            var myOutputXml = new XElement(ElementName, "output");
-
-            using (var decryptedResponseStream = new MemoryStream())
-            {
-                myOutputXml.Save(decryptedResponseStream);
-                decryptedResponseStream.Seek(0, SeekOrigin.Begin);
-                
-                var decryptResponse = new DecryptResponse
-                {
-                    KeyId = KeyId,
-                    Plaintext = decryptedResponseStream
-                };
-                kmsClient.Setup(x => x.DecryptAsync(It.IsAny<DecryptRequest>(), CancellationToken.None))
-                         .ReturnsAsync(decryptResponse)
-                         .Callback<DecryptRequest, CancellationToken>((dr, ct) =>
-                         {
-                             Assert.Same(decryptConfig.EncryptionContext, dr.EncryptionContext);
-                             Assert.Same(decryptConfig.GrantTokens, dr.GrantTokens);
-
-                             Assert.Equal(myEncryptedString, Encoding.UTF8.GetString(dr.CiphertextBlob.ToArray()));
-                         });
-
-                var plaintextXml = decryptor.Decrypt(myEncryptedXml);
-                Assert.True(XNode.DeepEquals(myOutputXml, plaintextXml));
             }
         }
 

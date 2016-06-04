@@ -16,7 +16,8 @@
   "dependencies": {
     "AspNetCore.DataProtection.Aws.S3": "",
     "AspNetCore.DataProtection.Aws.Kms": "",
-    "xunit": "2.1.0"
+    "xunit": "2.1.0",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-rc1-final"
   },
 
   "frameworks": {

@@ -4,6 +4,7 @@ using Amazon;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using AspNetCore.DataProtection.Aws.Kms;
+using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -17,21 +18,25 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private readonly KmsXmlDecryptor decryptor;
         private readonly IAmazonKeyManagementService kmsClient;
         private readonly KmsXmlEncryptorConfig encryptConfig;
-        private readonly KmsXmlDecryptorConfig decryptConfig;
         private const string ApplicationName = "hotchkj-test-app";
         private const string ElementName = "name";
         private const string ElementContent = "test";
 
         public KmsIntegrationTests()
         {
+            var svcCollection = new ServiceCollection();
+            svcCollection.AddSingleton(sp => encryptConfig);
+            svcCollection.AddSingleton(sp => kmsClient);
+            var svcProvider = svcCollection.BuildServiceProvider();
+
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             kmsClient = new AmazonKeyManagementServiceClient(RegionEndpoint.EUWest1);
             // Expectation that whatever key is in use has this alias
             encryptConfig = new KmsXmlEncryptorConfig(ApplicationName, "alias/KmsIntegrationTesting");
-            decryptConfig = new KmsXmlDecryptorConfig(ApplicationName);
 
-            encryptor = new KmsXmlEncryptor(kmsClient, encryptConfig);
-            decryptor = new KmsXmlDecryptor(kmsClient, decryptConfig);
+            encryptor = new KmsXmlEncryptor(kmsClient, encryptConfig, svcProvider);
+
+            decryptor = new KmsXmlDecryptor(svcProvider);
         }
 
         public void Dispose()
