@@ -1,13 +1,13 @@
 {
   "summary": "ASP.NET S3 DataProtection Repository",
   "description": "DataProtection repository for use with AWS S3 (DNX RC1)",
+  "projectUrl": "https://github.com/hotchkj/AspNetCore.DataProtection.S3",
   "licenseUrl": "https://opensource.org/licenses/MIT",
-  "owners": [ "hotchkj" ],
-  "projectUrl": "",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/hotchkj/AspNetCore.DataProtection.S3"
   },
+  "owners": [ "hotchkj" ],
   "authors": [ "hotchkj" ],
   "version": "1.0.0-alpha01",
 
