@@ -1,5 +1,6 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
+using AspNetCore.DataProtection.Aws.S3;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Threading;
 using System.Xml.Linq;
 using Xunit;
 
-namespace AspNetCore.DataProtection.S3.IntegrationTests
+namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
     public sealed class S3RespositoryTests : IDisposable
     {

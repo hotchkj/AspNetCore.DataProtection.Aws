@@ -1,9 +1,12 @@
-# AspNetCore.DataProtection.S3
-S3 integration for ASP.NET Core data protection. By default, ASP.NET Core stores encryption keys locally which causes issues with key mismatches across server farms. S3 can be used instead of a shared filesystem to provide key storage.
+# AspNetCore.DataProtection.Aws
+Aws integration for ASP.NET Core data protection.
+
+## S3 Persistence
+By default, ASP.NET Core stores encryption keys locally which causes issues with key mismatches across server farms. S3 can be used instead of a shared filesystem to provide key storage.
 
 Server-side S3 encryption of AES256 is enabled for all keys written to S3. It remains the client's responsibility to ensure access control to the S3 bucket is appropriately configured.
 
-## Configuration of S3 Persistence
+### Configuration
 In Startup.cs, specified as part of DataProtection configuration:
 ```csharp
 public void ConfigureServices(IServiceCollection services)

@@ -1,7 +1,8 @@
-﻿using System;
+﻿using AspNetCore.DataProtection.Aws.S3;
+using System;
 using Xunit;
 
-namespace AspNetCore.DataProtection.S3.IntegrationTests
+namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
     public class S3RepositoryConfigTests
     {

@@ -10,11 +10,12 @@
   },
 
   "commands": {
-    "integrate": "xunit.runner.dnx -parallel all"
+    "test": "xunit.runner.dnx -parallel all"
   },
 
   "dependencies": {
-    "AspNetCore.DataProtection.S3": "",
+    "AspNetCore.DataProtection.Aws.S3": "",
+    "Moq": "4.5.8",
     "xunit": "2.1.0"
   },
 

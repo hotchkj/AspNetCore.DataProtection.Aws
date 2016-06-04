@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Collections.ObjectModel;
 
-namespace AspNetCore.DataProtection.S3
+namespace AspNetCore.DataProtection.Aws.S3
 {
     // <summary>
     /// An XML repository backed by AWS S3.

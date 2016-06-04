@@ -1,12 +1,13 @@
 ﻿using Amazon;
 using Amazon.S3;
+using AspNetCore.DataProtection.Aws.S3;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Xunit;
 
-namespace AspNetCore.DataProtection.S3.IntegrationTests
+namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
     public sealed class S3IntegrationTests : IDisposable
     {

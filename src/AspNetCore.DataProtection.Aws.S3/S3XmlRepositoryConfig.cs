@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AspNetCore.DataProtection.S3
+namespace AspNetCore.DataProtection.Aws.S3
 {
     public class S3XmlRepositoryConfig
     {

@@ -4,7 +4,7 @@ using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Amazon.S3;
 
-namespace AspNetCore.DataProtection.S3
+namespace AspNetCore.DataProtection.Aws.S3
 {
     /// <summary>
     /// Extensions for configuring data protection using an <see cref="IDataProtectionBuilder"/>.

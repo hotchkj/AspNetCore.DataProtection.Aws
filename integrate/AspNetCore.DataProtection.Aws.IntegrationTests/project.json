@@ -14,8 +14,7 @@
   },
 
   "dependencies": {
-    "AspNetCore.DataProtection.S3": "",
-    "Moq": "4.5.8",
+    "AspNetCore.DataProtection.Aws.S3": "",
     "xunit": "2.1.0"
   },
 
