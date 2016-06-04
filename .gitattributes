@@ -1,0 +1,8 @@
+* text=auto
+
+# Source files
+*.cs text diff=csharp
+
+# Visual Studio
+*.sln text eol=crlf
+*.xproj text eol=crlf
