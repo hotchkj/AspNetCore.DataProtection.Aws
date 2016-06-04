@@ -4,15 +4,7 @@ S3 integration for ASP.NET Core data protection. By default, ASP.NET Core stores
 Server-side S3 encryption of AES256 is enabled for all keys written to S3. It remains the client's responsibility to ensure access control to the S3 bucket is appropriately configured.
 
 ## Configuration of S3 Persistence
-In Startup.cs, specified as a direct part of the DataProtection builder:
-```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddDataProtection()
-            .PersistKeysToS3(new AmazonS3Client(), new S3XmlRepositoryConfig("my-bucket-name"));
-}
-```
-or as part of DataProtection configuration:
+In Startup.cs, specified as part of DataProtection configuration:
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
