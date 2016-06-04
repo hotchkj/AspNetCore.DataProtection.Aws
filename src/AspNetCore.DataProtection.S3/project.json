@@ -1,0 +1,34 @@
+{
+  "summary": "ASP.NET S3 DataProtection Repository",
+  "description": "DataProtection repository for use with AWS S3",
+  "licenseUrl": "https://opensource.org/licenses/MIT",
+  "owners": [ "hotchkj" ],
+  "projectUrl": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "authors": [ "hotchkj" ],
+  "version": "1.0.0-alpha-01",
+
+  "compilationOptions": {
+    "emitEntryPoint": false,
+    "warningsAsErrors": true
+  },
+
+  "dependencies": {
+    "AWSSDK.S3": "3.1.7",
+    "Microsoft.AspNet.DataProtection": "1.0.0-rc1-final"
+  },
+
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+      }
+    },
+    "dnx451": {
+      "dependencies": {
+      }
+    }
+  }
+}

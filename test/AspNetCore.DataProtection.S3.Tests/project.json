@@ -1,0 +1,29 @@
+{
+  "summary": "ASP.NET S3 DataProtection Repository Integration Tests",
+  "licenseUrl": "https://opensource.org/licenses/MIT",
+  "owners": [ "hotchkj" ],
+  "authors": [ "hotchkj" ],
+  "version": "1.0.0-*",
+
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+
+  "commands": {
+    "test": "xunit.runner.dnx -parallel all"
+  },
+
+  "dependencies": {
+    "AspNetCore.DataProtection.S3": "",
+    "Moq": "4.5.8",
+    "xunit": "2.1.0"
+  },
+
+  "frameworks": {
+    "dnx451": {
+      "dependencies": {
+        "xunit.runner.dnx": "2.1.0-rc1-build204"
+      }
+    }
+  }
+}
