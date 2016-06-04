@@ -1,6 +1,6 @@
 {
   "summary": "ASP.NET S3 DataProtection Repository",
-  "description": "DataProtection repository for use with AWS S3",
+  "description": "DataProtection repository for use with AWS S3 (DNX RC1)",
   "licenseUrl": "https://opensource.org/licenses/MIT",
   "owners": [ "hotchkj" ],
   "projectUrl": "",
@@ -9,7 +9,7 @@
     "url": ""
   },
   "authors": [ "hotchkj" ],
-  "version": "1.0.0-alpha-01",
+  "version": "1.0.0-alpha01",
 
   "compilationOptions": {
     "emitEntryPoint": false,
