@@ -59,6 +59,16 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         }
 
         [Fact]
+        public async Task ExpectNonExistentQueryToSucceedWithZero()
+        {
+            config.KeyPrefix = "DoesntExist/";
+
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+
+            Assert.Equal(0, list.Count);
+        }
+
+        [Fact]
         public async Task ExpectEmptyQueryToSucceedWithZero()
         {
             config.KeyPrefix = "NothingHere/";

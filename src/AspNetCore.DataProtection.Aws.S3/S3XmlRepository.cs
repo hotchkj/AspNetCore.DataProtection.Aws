@@ -113,7 +113,7 @@ namespace AspNetCore.DataProtection.Aws.S3
 
             await Task.WhenAll(queries).ConfigureAwait(false);
 
-            return new ReadOnlyCollection<XElement>(queries.Select(x => x.Result).ToList());
+            return new ReadOnlyCollection<XElement>(queries.Select(x => x.Result).Where(x => x != null).ToList());
         }
 
         private async Task<XElement> GetElementFromKey(S3Object item, SemaphoreSlim throttler, CancellationToken ct)
@@ -128,6 +128,11 @@ namespace AspNetCore.DataProtection.Aws.S3
                     Key = item.Key
                 }, ct).ConfigureAwait(false))
                 {
+                    // Skip empty folder keys
+                    if(item.Key.EndsWith("/") && response.ContentLength == 0)
+                    {
+                        return null;
+                    }
                     return XElement.Load(response.ResponseStream);
                 }
             }
