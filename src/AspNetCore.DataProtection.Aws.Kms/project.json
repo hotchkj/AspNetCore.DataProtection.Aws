@@ -1,11 +1,11 @@
 {
-  "summary": "ASP.NET Kms DataProtection Cryptography",
+  "summary": "ASP.NET AWS KMS DataProtection Cryptography",
   "description": "DataProtection encrypter & decrypter for use with AWS KMS (DNX RC1)",
-  "projectUrl": "https://github.com/hotchkj/AspNetCore.DataProtection.S3",
+  "projectUrl": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws",
   "licenseUrl": "https://opensource.org/licenses/MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hotchkj/AspNetCore.DataProtection.S3"
+    "url": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws"
   },
   "owners": [ "hotchkj" ],
   "authors": [ "hotchkj" ],
