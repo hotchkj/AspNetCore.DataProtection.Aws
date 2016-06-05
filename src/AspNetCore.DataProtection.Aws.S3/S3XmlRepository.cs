@@ -122,11 +122,19 @@ namespace AspNetCore.DataProtection.Aws.S3
 
             try
             {
-                using (var response = await S3Client.GetObjectAsync(new GetObjectRequest
+                var gr = new GetObjectRequest
                 {
                     BucketName = Config.Bucket,
-                    Key = item.Key
-                }, ct).ConfigureAwait(false))
+                    Key = item.Key,
+                    ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.None
+                };
+                if (Config.ServerSideEncryptionCustomerMethod != ServerSideEncryptionCustomerMethod.None)
+                {
+                    gr.ServerSideEncryptionCustomerMethod = Config.ServerSideEncryptionCustomerMethod;
+                    gr.ServerSideEncryptionCustomerProvidedKey = Config.ServerSideEncryptionCustomerProvidedKey;
+                    gr.ServerSideEncryptionCustomerProvidedKeyMD5 = Config.ServerSideEncryptionCustomerProvidedKeyMD5;
+                }
+                using (var response = await S3Client.GetObjectAsync(gr, ct).ConfigureAwait(false))
                 {
                     // Skip empty folder keys
                     if(item.Key.EndsWith("/") && response.ContentLength == 0)
@@ -169,18 +177,31 @@ namespace AspNetCore.DataProtection.Aws.S3
                 var hasher = MD5.Create();
                 var md5 = Convert.ToBase64String(hasher.ComputeHash(stream));
 
-                await S3Client.PutObjectAsync(new PutObjectRequest
+                var pr = new PutObjectRequest
                 {
                     BucketName = Config.Bucket,
                     Key = key,
                     InputStream = stream,
-                    ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256,
+                    ServerSideEncryptionMethod = Config.ServerSideEncryptionMethod,
+                    ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.None,
                     AutoResetStreamPosition = true,
                     AutoCloseStream = true,
                     MD5Digest = md5,
                     ContentType = "text/xml",
                     StorageClass = Config.StorageClass
-                }, ct).ConfigureAwait(false);
+                };
+                if(Config.ServerSideEncryptionMethod == ServerSideEncryptionMethod.AWSKMS)
+                {
+                    pr.ServerSideEncryptionKeyManagementServiceKeyId = Config.ServerSideEncryptionKeyManagementServiceKeyId;
+                }
+                else if (Config.ServerSideEncryptionCustomerMethod != ServerSideEncryptionCustomerMethod.None)
+                {
+                    pr.ServerSideEncryptionMethod = ServerSideEncryptionMethod.None;
+                    pr.ServerSideEncryptionCustomerMethod = Config.ServerSideEncryptionCustomerMethod;
+                    pr.ServerSideEncryptionCustomerProvidedKey = Config.ServerSideEncryptionCustomerProvidedKey;
+                    pr.ServerSideEncryptionCustomerProvidedKeyMD5 = Config.ServerSideEncryptionCustomerProvidedKeyMD5;
+                }
+                await S3Client.PutObjectAsync(pr, ct).ConfigureAwait(false);
             }
         }
 

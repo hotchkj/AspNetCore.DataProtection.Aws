@@ -10,9 +10,19 @@ namespace AspNetCore.DataProtection.Aws.S3
         public S3XmlRepositoryConfig(string bucketName)
         {
             Bucket = bucketName;
+            SetToDefaults();
+        }
+
+        public void SetToDefaults()
+        {
             KeyPrefix = "DataProtection-Keys/";
             MaxS3QueryConcurrency = 10;
             StorageClass = S3StorageClass.Standard;
+            ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256;
+            ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.None;
+            ServerSideEncryptionCustomerProvidedKey = null;
+            ServerSideEncryptionCustomerProvidedKeyMD5 = null;
+            ServerSideEncryptionKeyManagementServiceKeyId = null;
         }
 
         public string Bucket { get; set; }
@@ -33,6 +43,11 @@ namespace AspNetCore.DataProtection.Aws.S3
                 _keyPrefix = value;
             }
         }
+        public ServerSideEncryptionMethod ServerSideEncryptionMethod { get; set; }
+        public ServerSideEncryptionCustomerMethod ServerSideEncryptionCustomerMethod { get; set; }
+        public string ServerSideEncryptionCustomerProvidedKey { get; set; }
+        public string ServerSideEncryptionCustomerProvidedKeyMD5 { get; set; }
+        public string ServerSideEncryptionKeyManagementServiceKeyId { get; set; }
 
         private string _keyPrefix;
     }

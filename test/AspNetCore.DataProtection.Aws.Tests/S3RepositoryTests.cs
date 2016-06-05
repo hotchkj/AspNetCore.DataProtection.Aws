@@ -24,6 +24,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private const string ElementContent = "test";
         private const string Bucket = "bucket";
         private const string Prefix = "prefix";
+        private const string AESKey = "x+AmYqxeD//Ky4vt0HmXxSVGll7TgEkJK6iTPGqFJbk=";
 
         public S3RespositoryTests()
         {
@@ -42,30 +43,176 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         [Fact]
         public void ExpectStoreToSucceed()
         {
-            var myXml = new XElement(ElementName, ElementContent);
-            var myTestName = "friendly";
+            try
+            {
+                var myXml = new XElement(ElementName, ElementContent);
+                var myTestName = "friendly";
 
-            // Response isn't queried, so can be default arguments
-            var response = new PutObjectResponse();
+                // Response isn't queried, so can be default arguments
+                var response = new PutObjectResponse();
 
-            s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
-                    .ReturnsAsync(response)
-                    .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
-                    {
-                        Assert.Equal(Bucket, pr.BucketName);
-                        Assert.Equal(ServerSideEncryptionMethod.AES256, pr.ServerSideEncryptionMethod);
-                        Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
+                s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
+                        .ReturnsAsync(response)
+                        .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
+                        {
+                            Assert.Equal(Bucket, pr.BucketName);
+                            Assert.Equal(ServerSideEncryptionMethod.AES256, pr.ServerSideEncryptionMethod);
+                            Assert.Equal(ServerSideEncryptionCustomerMethod.None, pr.ServerSideEncryptionCustomerMethod);
+                            Assert.Null(pr.ServerSideEncryptionCustomerProvidedKey);
+                            Assert.Null(pr.ServerSideEncryptionCustomerProvidedKeyMD5);
+                            Assert.Null(pr.ServerSideEncryptionKeyManagementServiceKeyId);
+                            Assert.Equal(S3StorageClass.Standard, pr.StorageClass);
+                            Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
 
                         // Stream is written to and positioned at the end - we require that S3 resets it
                         // and must do so here in our test
                         Assert.True(pr.AutoResetStreamPosition);
-                        pr.InputStream.Seek(0, SeekOrigin.Begin);
+                            pr.InputStream.Seek(0, SeekOrigin.Begin);
 
-                        var body = XElement.Load(pr.InputStream);
-                        Assert.True(XNode.DeepEquals(myXml, body));
-                    });
+                            var body = XElement.Load(pr.InputStream);
+                            Assert.True(XNode.DeepEquals(myXml, body));
+                        });
 
-            xmlRepository.StoreElement(myXml, myTestName);
+                xmlRepository.StoreElement(myXml, myTestName);
+            }
+            finally
+            {
+                config.SetToDefaults();
+            }
+        }
+
+        [Fact]
+        public void ExpectKmsStoreToSucceed()
+        {
+            try
+            {
+                var keyId = "keyId";
+                config.ServerSideEncryptionKeyManagementServiceKeyId = keyId;
+                config.ServerSideEncryptionMethod = ServerSideEncryptionMethod.AWSKMS;
+
+                var myXml = new XElement(ElementName, ElementContent);
+                var myTestName = "friendly";
+
+                // Response isn't queried, so can be default arguments
+                var response = new PutObjectResponse();
+
+                s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
+                        .ReturnsAsync(response)
+                        .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
+                        {
+                            Assert.Equal(Bucket, pr.BucketName);
+                            Assert.Equal(ServerSideEncryptionMethod.AWSKMS, pr.ServerSideEncryptionMethod);
+                            Assert.Equal(ServerSideEncryptionCustomerMethod.None, pr.ServerSideEncryptionCustomerMethod);
+                            Assert.Null(pr.ServerSideEncryptionCustomerProvidedKey);
+                            Assert.Null(pr.ServerSideEncryptionCustomerProvidedKeyMD5);
+                            Assert.Equal(keyId, pr.ServerSideEncryptionKeyManagementServiceKeyId);
+                            Assert.Equal(S3StorageClass.Standard, pr.StorageClass);
+                            Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
+
+                        // Stream is written to and positioned at the end - we require that S3 resets it
+                        // and must do so here in our test
+                        Assert.True(pr.AutoResetStreamPosition);
+                            pr.InputStream.Seek(0, SeekOrigin.Begin);
+
+                            var body = XElement.Load(pr.InputStream);
+                            Assert.True(XNode.DeepEquals(myXml, body));
+                        });
+
+                xmlRepository.StoreElement(myXml, myTestName);
+            }
+            finally
+            {
+                config.SetToDefaults();
+            }
+        }
+
+        [Fact]
+        public void ExpectCustomStoreToSucceed()
+        {
+            try
+            {
+                var md5 = "md5";
+                config.ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256;
+                config.ServerSideEncryptionCustomerProvidedKey = AESKey;
+                config.ServerSideEncryptionCustomerProvidedKeyMD5 = md5;
+
+                var myXml = new XElement(ElementName, ElementContent);
+                var myTestName = "friendly";
+
+                // Response isn't queried, so can be default arguments
+                var response = new PutObjectResponse();
+
+                s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
+                        .ReturnsAsync(response)
+                        .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
+                        {
+                            Assert.Equal(Bucket, pr.BucketName);
+                            Assert.Equal(ServerSideEncryptionMethod.None, pr.ServerSideEncryptionMethod);
+                            Assert.Equal(ServerSideEncryptionCustomerMethod.AES256, pr.ServerSideEncryptionCustomerMethod);
+                            Assert.Equal(AESKey, pr.ServerSideEncryptionCustomerProvidedKey);
+                            Assert.Equal(md5, pr.ServerSideEncryptionCustomerProvidedKeyMD5);
+                            Assert.Null(pr.ServerSideEncryptionKeyManagementServiceKeyId);
+                            Assert.Equal(S3StorageClass.Standard, pr.StorageClass);
+                            Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
+
+                            // Stream is written to and positioned at the end - we require that S3 resets it
+                            // and must do so here in our test
+                            Assert.True(pr.AutoResetStreamPosition);
+                            pr.InputStream.Seek(0, SeekOrigin.Begin);
+
+                            var body = XElement.Load(pr.InputStream);
+                            Assert.True(XNode.DeepEquals(myXml, body));
+                        });
+
+                xmlRepository.StoreElement(myXml, myTestName);
+            }
+            finally
+            {
+                config.SetToDefaults();
+            }
+        }
+
+        [Fact]
+        public void ExpectVariedStorageClassToSucceed()
+        {
+            try
+            {
+                config.StorageClass = S3StorageClass.ReducedRedundancy;
+
+                var myXml = new XElement(ElementName, ElementContent);
+                var myTestName = "friendly";
+
+                // Response isn't queried, so can be default arguments
+                var response = new PutObjectResponse();
+
+                s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
+                        .ReturnsAsync(response)
+                        .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
+                        {
+                            Assert.Equal(Bucket, pr.BucketName);
+                            Assert.Equal(ServerSideEncryptionMethod.AES256, pr.ServerSideEncryptionMethod);
+                            Assert.Equal(ServerSideEncryptionCustomerMethod.None, pr.ServerSideEncryptionCustomerMethod);
+                            Assert.Null(pr.ServerSideEncryptionCustomerProvidedKey);
+                            Assert.Null(pr.ServerSideEncryptionCustomerProvidedKeyMD5);
+                            Assert.Null(pr.ServerSideEncryptionKeyManagementServiceKeyId);
+                            Assert.Equal(S3StorageClass.ReducedRedundancy, pr.StorageClass);
+                            Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
+
+                            // Stream is written to and positioned at the end - we require that S3 resets it
+                            // and must do so here in our test
+                            Assert.True(pr.AutoResetStreamPosition);
+                            pr.InputStream.Seek(0, SeekOrigin.Begin);
+
+                            var body = XElement.Load(pr.InputStream);
+                            Assert.True(XNode.DeepEquals(myXml, body));
+                        });
+
+                xmlRepository.StoreElement(myXml, myTestName);
+            }
+            finally
+            {
+                config.SetToDefaults();
+            }
         }
 
         [Fact]
@@ -138,6 +285,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                         {
                             Assert.Equal(Bucket, gr.BucketName);
                             Assert.Equal(key, gr.Key);
+                            Assert.Equal(ServerSideEncryptionCustomerMethod.None, gr.ServerSideEncryptionCustomerMethod);
+                            Assert.Null(gr.ServerSideEncryptionCustomerProvidedKey);
+                            Assert.Null(gr.ServerSideEncryptionCustomerProvidedKeyMD5);
                         });
 
                 var list = xmlRepository.GetAllElements();
@@ -145,6 +295,79 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                 Assert.Equal(1, list.Count);
 
                 Assert.True(XNode.DeepEquals(myXml, list.First()));
+            }
+        }
+
+        [Fact]
+        public void ExpectCustomSingleQueryToSucceed()
+        {
+            try
+            {
+                var md5 = "md5";
+                config.ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256;
+                config.ServerSideEncryptionCustomerProvidedKey = AESKey;
+                config.ServerSideEncryptionCustomerProvidedKeyMD5 = md5;
+
+                var key = "key";
+                var etag = "etag";
+
+                var listResponse = new ListObjectsV2Response
+                {
+                    Name = Bucket,
+                    Prefix = Prefix,
+                    S3Objects = new List<S3Object>
+                {
+                    new S3Object
+                    {
+                        Key = key,
+                        ETag = etag
+                    }
+                },
+                    IsTruncated = false
+                };
+                s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
+                        .ReturnsAsync(listResponse)
+                        .Callback<ListObjectsV2Request, CancellationToken>((lr, ct) =>
+                        {
+                            Assert.Equal(Bucket, lr.BucketName);
+                            Assert.Equal(Prefix, lr.Prefix);
+                            Assert.Null(lr.ContinuationToken);
+                        });
+
+                using (var returnedStream = new MemoryStream())
+                {
+                    var myXml = new XElement(ElementName, ElementContent);
+                    myXml.Save(returnedStream);
+                    returnedStream.Seek(0, SeekOrigin.Begin);
+
+                    var getResponse = new GetObjectResponse
+                    {
+                        BucketName = Bucket,
+                        ETag = etag,
+                        Key = key,
+                        ResponseStream = returnedStream
+                    };
+                    s3Client.Setup(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), CancellationToken.None))
+                            .ReturnsAsync(getResponse)
+                            .Callback<GetObjectRequest, CancellationToken>((gr, ct) =>
+                            {
+                                Assert.Equal(Bucket, gr.BucketName);
+                                Assert.Equal(key, gr.Key);
+                                Assert.Equal(ServerSideEncryptionCustomerMethod.AES256, gr.ServerSideEncryptionCustomerMethod);
+                                Assert.Equal(AESKey, gr.ServerSideEncryptionCustomerProvidedKey);
+                                Assert.Equal(md5, gr.ServerSideEncryptionCustomerProvidedKeyMD5);
+                            });
+
+                    var list = xmlRepository.GetAllElements();
+
+                    Assert.Equal(1, list.Count);
+
+                    Assert.True(XNode.DeepEquals(myXml, list.First()));
+                }
+            }
+            finally
+            {
+                config.SetToDefaults();
             }
         }
 
