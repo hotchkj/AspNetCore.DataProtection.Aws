@@ -9,7 +9,7 @@
   },
   "owners": [ "hotchkj" ],
   "authors": [ "hotchkj" ],
-  "version": "1.0.0-alpha01",
+  "version": "1.0.0-alpha02",
 
   "compilationOptions": {
     "emitEntryPoint": false,
