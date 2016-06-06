@@ -43,7 +43,7 @@ Default options for ASP.NET data encryption are bound to certificates or Windows
 
 Please note that `IServiceProvider`/`IServiceCollection` Dependency Injection is required for this to operate correctly, due to the need to locate & create the appropriate decryptor.
 
-It remains the client's responsibility to correctly configure access control to the chosen KMS key, and whether their precise scenario requires master or data keys, grants, or particular encryption contexts.
+It remains the client's responsibility to correctly configure access control to the chosen KMS key, and whether their precise scenario requires grants or particular encryption contexts.
 
 ### Configuration
 In Startup.cs, specified as part of DataProtection configuration:
