@@ -9,11 +9,12 @@
   },
   "owners": [ "hotchkj" ],
   "authors": [ "hotchkj" ],
-  "version": "1.0.0-alpha02",
+  "version": "1.0.0-alpha03",
 
   "compilationOptions": {
     "emitEntryPoint": false,
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../shared.snk"
   },
 
   "dependencies": {
