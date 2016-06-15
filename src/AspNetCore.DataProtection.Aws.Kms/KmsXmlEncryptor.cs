@@ -77,6 +77,8 @@ namespace AspNetCore.DataProtection.Aws.Kms
 
         public async Task<EncryptedXmlInfo> EncryptAsync(XElement plaintextElement, CancellationToken ct)
         {
+            _logger?.LogDebug("Encrypting plaintext DataProtection key using AWS key {0}", Config.KeyId);
+
             // Some implementations of this e.g. DpapiXmlEncryptor go to enormous lengths to
             // create a memory stream, use unsafe code to zero it, and so on.
             //

@@ -19,7 +19,6 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private readonly KmsXmlDecryptor decryptor;
         private readonly MockRepository repository;
         private readonly Mock<IAmazonKeyManagementService> kmsClient;
-        private readonly Mock<IServiceProvider> serviceProvider;
         private readonly KmsXmlEncryptorConfig encryptConfig;
         private const string AppName = "appName";
         private const string KeyId = "keyId";
@@ -31,7 +30,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             repository = new MockRepository(MockBehavior.Strict);
             kmsClient = repository.Create<IAmazonKeyManagementService>();
-            serviceProvider = repository.Create<IServiceProvider>();
+            var serviceProvider = repository.Create<IServiceProvider>();
             
             serviceProvider.Setup(x => x.GetService(typeof(KmsXmlEncryptorConfig)))
                            .Returns(encryptConfig);

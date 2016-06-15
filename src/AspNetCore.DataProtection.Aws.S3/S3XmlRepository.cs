@@ -122,6 +122,7 @@ namespace AspNetCore.DataProtection.Aws.S3
 
             try
             {
+                _logger?.LogDebug("Retrieving DataProtection key at S3 location {0} in bucket {1}", item.Key, Config.Bucket);
                 var gr = new GetObjectRequest
                 {
                     BucketName = Config.Bucket,
@@ -162,11 +163,12 @@ namespace AspNetCore.DataProtection.Aws.S3
             if (!IsSafeS3Key(friendlyName))
             {
                 key = Config.KeyPrefix + Guid.NewGuid() + ".xml";
-                _logger?.LogWarning("DataProtection key friendly name {0} is not safe for S3, ignoring and using key {1}", friendlyName, key);
+                _logger?.LogWarning("Storing DataProtection key with friendly name {0} is not safe for S3. Ignoring and storing at S3 location {1} in bucket {2}", friendlyName, key, Config.Bucket);
             }
             else
             {
                 key = Config.KeyPrefix + friendlyName + ".xml";
+                _logger?.LogDebug("Storing DataProtection key at S3 location {0} in bucket {1}", key, Config.Bucket);
             }
 
             using (var stream = new MemoryStream())

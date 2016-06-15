@@ -1,10 +1,10 @@
-﻿using System;
+﻿// Copyright(c) 2016 Jeff Hotchkiss
+// Licensed under the MIT License. See License.md in the project root for license information.
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Amazon.S3;
-// Copyright(c) 2016 Jeff Hotchkiss
-// Licensed under the MIT License. See License.md in the project root for license information.
 
 namespace AspNetCore.DataProtection.Aws.S3
 {

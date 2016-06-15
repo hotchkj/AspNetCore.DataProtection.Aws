@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 namespace AspNetCore.DataProtection.Aws.Kms
 {
-    public class KmsConstants
+    public static class KmsConstants
     {
         /// <summary>
         /// Additional context supplied to all KMS operations used by AspNetCore.DataProtection.Aws.Kms
