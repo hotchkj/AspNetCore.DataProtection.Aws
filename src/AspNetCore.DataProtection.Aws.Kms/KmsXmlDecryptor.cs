@@ -65,6 +65,8 @@ namespace AspNetCore.DataProtection.Aws.Kms
 
         public async Task<XElement> DecryptAsync(XElement encryptedElement, CancellationToken ct)
         {
+            _logger?.LogDebug("Decrypting ciphertext DataProtection key using AWS key {0}", Config.KeyId);
+
             using (var memoryStream = new MemoryStream())
             {
                 var protectedKey = Convert.FromBase64String((string)encryptedElement.Element("value"));
