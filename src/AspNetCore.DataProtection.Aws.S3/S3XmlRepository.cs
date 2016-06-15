@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Collections.ObjectModel;
+using System.IO.Compression;
 
 namespace AspNetCore.DataProtection.Aws.S3
 {
@@ -29,7 +30,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// </summary>
         /// <param name="s3client">The S3 client.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        public S3XmlRepository(IAmazonS3 s3client, S3XmlRepositoryConfig config)
+        public S3XmlRepository(IAmazonS3 s3client, IS3XmlRepositoryConfig config)
             : this(s3client, config, services: null)
         {
         }
@@ -40,7 +41,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// <param name="s3client">The S3 client.</param>
 		/// <param name="config">The configuration object specifying how to write to S3.</param>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public S3XmlRepository(IAmazonS3 s3client, S3XmlRepositoryConfig config, IServiceProvider services)
+        public S3XmlRepository(IAmazonS3 s3client, IS3XmlRepositoryConfig config, IServiceProvider services)
         {
             if (s3client == null)
             {
@@ -61,7 +62,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// <summary>
         /// The bucket into which key material will be written.
         /// </summary>
-        public S3XmlRepositoryConfig Config { get; }
+        public IS3XmlRepositoryConfig Config { get; }
 
         /// <summary>
         /// The <see cref="IServiceProvider"/> provided to the constructor.
@@ -123,6 +124,7 @@ namespace AspNetCore.DataProtection.Aws.S3
             try
             {
                 _logger?.LogDebug("Retrieving DataProtection key at S3 location {0} in bucket {1}", item.Key, Config.Bucket);
+
                 var gr = new GetObjectRequest
                 {
                     BucketName = Config.Bucket,
@@ -135,6 +137,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                     gr.ServerSideEncryptionCustomerProvidedKey = Config.ServerSideEncryptionCustomerProvidedKey;
                     gr.ServerSideEncryptionCustomerProvidedKeyMD5 = Config.ServerSideEncryptionCustomerProvidedKeyMD5;
                 }
+
                 using (var response = await S3Client.GetObjectAsync(gr, ct).ConfigureAwait(false))
                 {
                     // Skip empty folder keys
@@ -142,7 +145,24 @@ namespace AspNetCore.DataProtection.Aws.S3
                     {
                         return null;
                     }
-                    return XElement.Load(response.ResponseStream);
+                    // Stream returned from AWS SDK does not automatically uncompress even with ContentEncoding set
+                    // Not that surprising considering that S3 treats the data as just N bytes; that it was compressed
+                    // client-side doesn't really matter.
+                    //
+                    // Compatibility: If we set compress=true but load something without gzip encoding then skip and
+                    // load as uncompressed. If we set compress=false but load something with gzip encoding, load as
+                    // compressed otherwise loading won't work.
+                    if (response.Headers.ContentEncoding == "gzip")
+                    {
+                        using (var responseStream = new GZipStream(response.ResponseStream, CompressionMode.Decompress))
+                        {
+                            return XElement.Load(responseStream);
+                        }
+                    }
+                    else
+                    {
+                        return XElement.Load(response.ResponseStream);
+                    }
                 }
             }
             finally
@@ -171,38 +191,60 @@ namespace AspNetCore.DataProtection.Aws.S3
                 _logger?.LogDebug("Storing DataProtection key at S3 location {0} in bucket {1}", key, Config.Bucket);
             }
 
-            using (var stream = new MemoryStream())
+            var pr = new PutObjectRequest
             {
-                element.Save(stream);
-                stream.Seek(0, SeekOrigin.Begin);
+                BucketName = Config.Bucket,
+                Key = key,
+                ServerSideEncryptionMethod = Config.ServerSideEncryptionMethod,
+                ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.None,
+                AutoResetStreamPosition = false,
+                AutoCloseStream = true,
+                ContentType = "text/xml",
+                StorageClass = Config.StorageClass
+            };
+            if (Config.ServerSideEncryptionMethod == ServerSideEncryptionMethod.AWSKMS)
+            {
+                pr.ServerSideEncryptionKeyManagementServiceKeyId = Config.ServerSideEncryptionKeyManagementServiceKeyId;
+            }
+            else if (Config.ServerSideEncryptionCustomerMethod != ServerSideEncryptionCustomerMethod.None)
+            {
+                pr.ServerSideEncryptionMethod = ServerSideEncryptionMethod.None;
+                pr.ServerSideEncryptionCustomerMethod = Config.ServerSideEncryptionCustomerMethod;
+                pr.ServerSideEncryptionCustomerProvidedKey = Config.ServerSideEncryptionCustomerProvidedKey;
+                pr.ServerSideEncryptionCustomerProvidedKeyMD5 = Config.ServerSideEncryptionCustomerProvidedKeyMD5;
+            }
 
+            using (var outputStream = new MemoryStream())
+            {
+                if (Config.ClientSideCompression)
+                {
+                    // Enable S3 to serve the content so that it automatically unzips in browser
+                    // Note that this doesn't apply to the streams AWS SDK returns!
+                    // Also provides a very convenient discriminator for whether the key is compressed
+                    pr.Headers.ContentEncoding = "gzip";
+                    // Weird behaviour around GZipStream. Need to close, but then access the disposed MemoryStream!
+                    using (var inputStream = new MemoryStream())
+                    {
+                        using (var gZippedstream = new GZipStream(inputStream, CompressionMode.Compress))
+                        {
+                            element.Save(gZippedstream);
+                        }
+                        var inputArray = inputStream.ToArray();
+                        await outputStream.WriteAsync(inputArray, 0, inputArray.Length, ct);
+                    }
+                }
+                else
+                {
+                    element.Save(outputStream);
+                }
+
+                outputStream.Seek(0, SeekOrigin.Begin);
                 var hasher = MD5.Create();
-                var md5 = Convert.ToBase64String(hasher.ComputeHash(stream));
+                pr.MD5Digest = Convert.ToBase64String(hasher.ComputeHash(outputStream));
 
-                var pr = new PutObjectRequest
-                {
-                    BucketName = Config.Bucket,
-                    Key = key,
-                    InputStream = stream,
-                    ServerSideEncryptionMethod = Config.ServerSideEncryptionMethod,
-                    ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.None,
-                    AutoResetStreamPosition = true,
-                    AutoCloseStream = true,
-                    MD5Digest = md5,
-                    ContentType = "text/xml",
-                    StorageClass = Config.StorageClass
-                };
-                if(Config.ServerSideEncryptionMethod == ServerSideEncryptionMethod.AWSKMS)
-                {
-                    pr.ServerSideEncryptionKeyManagementServiceKeyId = Config.ServerSideEncryptionKeyManagementServiceKeyId;
-                }
-                else if (Config.ServerSideEncryptionCustomerMethod != ServerSideEncryptionCustomerMethod.None)
-                {
-                    pr.ServerSideEncryptionMethod = ServerSideEncryptionMethod.None;
-                    pr.ServerSideEncryptionCustomerMethod = Config.ServerSideEncryptionCustomerMethod;
-                    pr.ServerSideEncryptionCustomerProvidedKey = Config.ServerSideEncryptionCustomerProvidedKey;
-                    pr.ServerSideEncryptionCustomerProvidedKeyMD5 = Config.ServerSideEncryptionCustomerProvidedKeyMD5;
-                }
+                outputStream.Seek(0, SeekOrigin.Begin);
+                pr.InputStream = outputStream;
+
                 await S3Client.PutObjectAsync(pr, ct).ConfigureAwait(false);
             }
         }

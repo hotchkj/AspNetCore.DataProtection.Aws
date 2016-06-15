@@ -5,6 +5,7 @@ using Amazon.KeyManagementService.Model;
 using AspNetCore.DataProtection.Aws.Kms;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -18,19 +19,19 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private readonly KmsXmlEncryptor encryptor;
         private readonly MockRepository repository;
         private readonly Mock<IAmazonKeyManagementService> kmsClient;
-        private readonly KmsXmlEncryptorConfig encryptConfig;
-        private const string AppName = "appName";
+        private readonly Mock<IKmsXmlEncryptorConfig> encryptConfig;
         private const string KeyId = "keyId";
         private const string ElementName = "name";
+        private readonly Dictionary<string, string> EncryptionContext = new Dictionary<string, string>();
+        private readonly List<string> GrantTokens = new List<string>();
 
         public KmsEncryptorTests()
         {
-            encryptConfig = new KmsXmlEncryptorConfig(AppName, KeyId);
-
             repository = new MockRepository(MockBehavior.Strict);
             kmsClient = repository.Create<IAmazonKeyManagementService>();
+            encryptConfig = repository.Create<IKmsXmlEncryptorConfig>();
 
-            encryptor = new KmsXmlEncryptor(kmsClient.Object, encryptConfig);
+            encryptor = new KmsXmlEncryptor(kmsClient.Object, encryptConfig.Object);
         }
 
         public void Dispose()
@@ -55,12 +56,17 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                     KeyId = KeyId,
                     CiphertextBlob = encryptedResponseStream
                 };
+
+                encryptConfig.Setup(x => x.EncryptionContext).Returns(EncryptionContext);
+                encryptConfig.Setup(x => x.GrantTokens).Returns(GrantTokens);
+                encryptConfig.Setup(x => x.KeyId).Returns(KeyId);
+
                 kmsClient.Setup(x => x.EncryptAsync(It.IsAny<EncryptRequest>(), CancellationToken.None))
                          .ReturnsAsync(encryptResponse)
                          .Callback<EncryptRequest, CancellationToken>((er, ct) =>
                          {
-                             Assert.Same(encryptConfig.EncryptionContext, er.EncryptionContext);
-                             Assert.Same(encryptConfig.GrantTokens, er.GrantTokens);
+                             Assert.Same(EncryptionContext, er.EncryptionContext);
+                             Assert.Same(GrantTokens, er.GrantTokens);
 
                              var body = XElement.Load(er.Plaintext);
                              Assert.True(XNode.DeepEquals(myInputXml, body));

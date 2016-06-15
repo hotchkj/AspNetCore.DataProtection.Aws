@@ -4,7 +4,14 @@ using System.Collections.Generic;
 
 namespace AspNetCore.DataProtection.Aws.Kms
 {
-    public class KmsXmlEncryptorConfig
+    public interface IKmsXmlEncryptorConfig
+    {
+        Dictionary<string, string> EncryptionContext { get; }
+        List<string> GrantTokens { get; }
+        string KeyId { get; }
+    }
+
+    public class KmsXmlEncryptorConfig : IKmsXmlEncryptorConfig
     {
         // TODO Can we obtain DataProtectionOptions.ApplicationDiscriminator for this?
         public KmsXmlEncryptorConfig(string applicationName, string keyId)

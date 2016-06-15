@@ -4,7 +4,6 @@ using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using AspNetCore.DataProtection.Aws.S3;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.AspNet.DataProtection.Repositories;
@@ -32,6 +31,36 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         }
         
         [Fact]
+        public async Task ExpectFullKeyManagerExplicitAwsStoreRetrieveToSucceed()
+        {
+            var config = new S3XmlRepositoryConfig(S3IntegrationTests.BucketName);
+            config.KeyPrefix = "RealXmlKeyManager/";
+            await ClearKeys(config.KeyPrefix);
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddDataProtection();
+            serviceCollection.ConfigureDataProtection(configure =>
+            {
+                configure.PersistKeysToAwsS3(s3client, config);
+            });
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IXmlRepository>(),
+                                               serviceProvider.GetRequiredService<IAuthenticatedEncryptorConfiguration>(),
+                                               serviceProvider);
+
+            var activationDate = new DateTimeOffset(new DateTime(1980, 1, 1));
+            var expirationDate = new DateTimeOffset(new DateTime(1980, 6, 1));
+            keyManager.CreateNewKey(activationDate, expirationDate);
+
+            var keys = keyManager.GetAllKeys();
+
+            Assert.Equal(1, keys.Count);
+            Assert.Equal(activationDate, keys.Single().ActivationDate);
+            Assert.Equal(expirationDate, keys.Single().ExpirationDate);
+        }
+
+        [Fact]
         public async Task ExpectFullKeyManagerStoreRetrieveToSucceed()
         {
             var config = new S3XmlRepositoryConfig(S3IntegrationTests.BucketName);
@@ -40,7 +69,6 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance(s3client);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(new AuthenticatedEncryptorConfiguration(new AuthenticatedEncryptionOptions()));
             serviceCollection.AddDataProtection();
             serviceCollection.ConfigureDataProtection(configure =>
             {

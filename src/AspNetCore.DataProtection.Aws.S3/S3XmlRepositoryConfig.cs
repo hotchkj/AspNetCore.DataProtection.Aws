@@ -5,7 +5,21 @@ using System;
 
 namespace AspNetCore.DataProtection.Aws.S3
 {
-    public class S3XmlRepositoryConfig
+    public interface IS3XmlRepositoryConfig
+    {
+        string Bucket { get; }
+        int MaxS3QueryConcurrency { get; }
+        S3StorageClass StorageClass { get; }
+        string KeyPrefix { get; }
+        ServerSideEncryptionMethod ServerSideEncryptionMethod { get; }
+        ServerSideEncryptionCustomerMethod ServerSideEncryptionCustomerMethod { get; }
+        string ServerSideEncryptionCustomerProvidedKey { get; }
+        string ServerSideEncryptionCustomerProvidedKeyMD5 { get; }
+        string ServerSideEncryptionKeyManagementServiceKeyId { get; }
+        bool ClientSideCompression { get; }
+    }
+
+    public class S3XmlRepositoryConfig : IS3XmlRepositoryConfig
     {
         public S3XmlRepositoryConfig(string bucketName)
         {
@@ -23,6 +37,7 @@ namespace AspNetCore.DataProtection.Aws.S3
             ServerSideEncryptionCustomerProvidedKey = null;
             ServerSideEncryptionCustomerProvidedKeyMD5 = null;
             ServerSideEncryptionKeyManagementServiceKeyId = null;
+            ClientSideCompression = true;
         }
 
         public string Bucket { get; set; }
@@ -38,7 +53,7 @@ namespace AspNetCore.DataProtection.Aws.S3
             {
                 if (!S3XmlRepository.IsSafeS3Key(value))
                 {
-                    throw new ArgumentException("Specified key prefix is not considered a safe S3 name", "value");
+                    throw new ArgumentException($"Specified key prefix {value} is not considered a safe S3 name", "value");
                 }
                 _keyPrefix = value;
             }
@@ -48,6 +63,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         public string ServerSideEncryptionCustomerProvidedKey { get; set; }
         public string ServerSideEncryptionCustomerProvidedKeyMD5 { get; set; }
         public string ServerSideEncryptionKeyManagementServiceKeyId { get; set; }
+        public bool ClientSideCompression { get; set; }
 
         private string _keyPrefix;
     }

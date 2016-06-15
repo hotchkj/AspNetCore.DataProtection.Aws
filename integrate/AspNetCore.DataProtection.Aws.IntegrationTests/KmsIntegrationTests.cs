@@ -27,14 +27,14 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
         public KmsIntegrationTests()
         {
-            var svcCollection = new ServiceCollection();
-            svcCollection.AddSingleton(sp => encryptConfig);
-            svcCollection.AddSingleton(sp => kmsClient);
-            var svcProvider = svcCollection.BuildServiceProvider();
-
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             kmsClient = new AmazonKeyManagementServiceClient(RegionEndpoint.EUWest1);
             encryptConfig = new KmsXmlEncryptorConfig(ApplicationName, KmsTestingKey);
+
+            var svcCollection = new ServiceCollection();
+            svcCollection.AddSingleton<IKmsXmlEncryptorConfig>(sp => encryptConfig);
+            svcCollection.AddSingleton(sp => kmsClient);
+            var svcProvider = svcCollection.BuildServiceProvider();
 
             encryptor = new KmsXmlEncryptor(kmsClient, encryptConfig, svcProvider);
 
@@ -65,15 +65,8 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             var encrypted = await encryptor.EncryptAsync(myXml, CancellationToken.None);
 
-            try
-            {
-                decryptor.Config.EncryptionContext[KmsConstants.ApplicationEncryptionContextKey] = "wrong";
-                await Assert.ThrowsAsync<InvalidCiphertextException>(async () => await decryptor.DecryptAsync(encrypted.EncryptedElement, CancellationToken.None));
-            }
-            finally
-            {
-                decryptor.Config.EncryptionContext[KmsConstants.ApplicationEncryptionContextKey] = ApplicationName;
-            }
+            decryptor.Config.EncryptionContext[KmsConstants.ApplicationEncryptionContextKey] = "wrong";
+            await Assert.ThrowsAsync<InvalidCiphertextException>(async () => await decryptor.DecryptAsync(encrypted.EncryptedElement, CancellationToken.None));
         }
     }
 }

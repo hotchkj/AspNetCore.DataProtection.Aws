@@ -33,7 +33,9 @@ public void ConfigureServices(IServiceCollection services)
             ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256,
             ServerSideEncryptionCustomerProvidedKey = "MyBase64Key",
             ServerSideEncryptionCustomerProvidedKeyMD5 = "MD5OfMyBase64Key",
-            ServerSideEncryptionKeyManagementServiceKeyId = "AwsKeyManagementServiceId"
+            ServerSideEncryptionKeyManagementServiceKeyId = "AwsKeyManagementServiceId",
+            // Compress stored XML before write to S3
+            Compress = true
         });
     });
 }
