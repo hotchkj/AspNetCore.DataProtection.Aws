@@ -22,7 +22,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// </summary>
         /// <param name="kmsClient">The KMS client.</param>
         /// <param name="config">The configuration object specifying which key data in KMS to use.</param>
-        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, KmsXmlEncryptorConfig config)
+        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IKmsXmlEncryptorConfig config)
             : this(kmsClient, config, services: null)
         {
         }
@@ -33,7 +33,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <param name="kmsClient">The KMS client.</param>
         /// <param name="config">The configuration object specifying which key data in KMS to use.</param>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, KmsXmlEncryptorConfig config, IServiceProvider services)
+        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IKmsXmlEncryptorConfig config, IServiceProvider services)
         {
             if (kmsClient == null)
             {
@@ -54,7 +54,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <summary>
         /// The configuration of how Kms will encrypt the XML data.
         /// </summary>
-        public KmsXmlEncryptorConfig Config { get; }
+        public IKmsXmlEncryptorConfig Config { get; }
 
         /// <summary>
         /// The <see cref="IServiceProvider"/> provided to the constructor.

@@ -11,9 +11,6 @@ namespace AspNetCore.DataProtection.Aws.S3
     /// <summary>
     /// Extensions for configuring data protection using an <see cref="IDataProtectionBuilder"/>.
     /// </summary>
-    /// <remarks>
-    /// Taken almost verbatim from https://github.com/aspnet/DataProtection/blob/release/src/Microsoft.AspNetCore.DataProtection/DataProtectionBuilderExtensions.cs
-    /// </remarks>
     public static class DataProtectionBuilderExtensions
     {
         /// <summary>

@@ -23,7 +23,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <remarks>
         /// DataProtection has a fairly awful way of making the IXmlDecryptor that by default never just does
         /// GetRequiredService<IXmlDecryptor>, instead calling the IServiceProvider constructor directly.
-        /// This means we have to do the resolution of needed objects via DI.
+        /// This means we have to do the resolution of needed objects via IServiceProvider.
         /// </remarks>
         /// <param name="services">A mandatory <see cref="IServiceProvider"/> to provide services.</param>
         public KmsXmlDecryptor(IServiceProvider services)
@@ -34,7 +34,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
             }
 
             KmsClient = services.GetRequiredService<IAmazonKeyManagementService>();
-            Config = services.GetRequiredService<KmsXmlEncryptorConfig>();
+            Config = services.GetRequiredService<IKmsXmlEncryptorConfig>();
             Services = services;
             _logger = services.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlDecryptor>();
         }
@@ -42,7 +42,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <summary>
         /// The configuration of how KMS will decrypt the XML data.
         /// </summary>
-        public KmsXmlEncryptorConfig Config { get; }
+        public IKmsXmlEncryptorConfig Config { get; }
 
         /// <summary>
         /// The <see cref="IServiceProvider"/> provided to the constructor.

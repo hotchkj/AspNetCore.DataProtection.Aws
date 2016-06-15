@@ -29,6 +29,8 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             s3client = new AmazonS3Client(RegionEndpoint.EUWest1);
             config = new S3XmlRepositoryConfig(BucketName);
+            // Override the default for ease of debugging. Explicitly turn on for compression tests.
+            config.ClientSideCompression = false;
             xmlRepo = new S3XmlRepository(s3client, config);
         }
 
@@ -39,149 +41,136 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
         public async Task PrepareLargeQueryTest()
         {
-            try
-            {
-                config.KeyPrefix = "LargeQueryTest/";
+            config.KeyPrefix = "LargeQueryTest/";
 
-                var myXml = new XElement(ElementName, ElementContent);
+            var myXml = new XElement(ElementName, ElementContent);
 
-                for (int i = 0; i < LargeTestNumber; ++i)
-                {
-                    await xmlRepo.StoreElementAsync(myXml, "LargeQueryTest" + i, CancellationToken.None);
-                }
-            }
-            finally
+            for (int i = 0; i < LargeTestNumber; ++i)
             {
-                config.SetToDefaults();
+                await xmlRepo.StoreElementAsync(myXml, "LargeQueryTest" + i, CancellationToken.None);
             }
         }
 
         [Fact]
         public async Task ExpectDefaultStoreRetrieveToSucceed()
         {
-            try
-            {
-                config.KeyPrefix = "DefaultTesting/";
+            config.KeyPrefix = "DefaultTesting/";
 
-                var myXml = new XElement(ElementName, ElementContent);
-                var myTestName = "friendly";
+            var myXml = new XElement(ElementName, ElementContent);
+            var myTestName = "friendly";
 
-                await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
+            await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
 
-                var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
-                Assert.Equal(1, list.Count);
-                Assert.True(XNode.DeepEquals(myXml, list.First()));
-            }
-            finally
-            {
-                config.SetToDefaults();
-            }
+            Assert.Equal(1, list.Count);
+            Assert.True(XNode.DeepEquals(myXml, list.First()));
+        }
+
+        [Fact]
+        public async Task ExpectCompressedStoreRetrieveToSucceed()
+        {
+            config.KeyPrefix = "CompressTesting/";
+            config.ClientSideCompression = true;
+
+            var myXml = new XElement(ElementName, ElementContent);
+            var myTestName = "friendly_compressed";
+
+            await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
+
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+
+            Assert.Equal(1, list.Count);
+            Assert.True(XNode.DeepEquals(myXml, list.First()));
+        }
+
+        [Fact]
+        public async Task ExpectBackwardsCompatibilityCompressedStoreRetrieveToSucceed()
+        {
+            config.KeyPrefix = "BackwardsCompatibilityCompressTesting/";
+            config.ClientSideCompression = false;
+
+            var myXml = new XElement(ElementName, ElementContent);
+            var myTestName = "friendly_not_so_compressed";
+
+            await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
+
+            config.ClientSideCompression = true;
+
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+
+            Assert.Equal(1, list.Count);
+            Assert.True(XNode.DeepEquals(myXml, list.First()));
         }
 
         [Fact]
         public async Task ExpectKmsStoreRetrieveToSucceed()
         {
-            try
-            {
-                config.KeyPrefix = "KmsTesting/";
-                config.ServerSideEncryptionKeyManagementServiceKeyId = "alias/KmsIntegrationTesting";
-                config.ServerSideEncryptionMethod = ServerSideEncryptionMethod.AWSKMS;
+            config.KeyPrefix = "KmsTesting/";
+            config.ServerSideEncryptionKeyManagementServiceKeyId = "alias/KmsIntegrationTesting";
+            config.ServerSideEncryptionMethod = ServerSideEncryptionMethod.AWSKMS;
 
-                var myXml = new XElement(ElementName, ElementContent);
-                var myTestName = "friendly";
+            var myXml = new XElement(ElementName, ElementContent);
+            var myTestName = "friendly";
 
-                await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
+            await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
 
-                var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
-                Assert.Equal(1, list.Count);
-                Assert.True(XNode.DeepEquals(myXml, list.First()));
-            }
-            finally
-            {
-                config.SetToDefaults();
-            }
+            Assert.Equal(1, list.Count);
+            Assert.True(XNode.DeepEquals(myXml, list.First()));
         }
 
         [Fact]
         public async Task ExpectCustomStoreRetrieveToSucceed()
         {
-            try
-            {
-                config.KeyPrefix = "CustomKeyTesting/";
-                config.ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256;
-                config.ServerSideEncryptionCustomerProvidedKey = "x+AmYqxeD//Ky4vt0HmXxSVGll7TgEkJK6iTPGqFJbk=";
+            config.KeyPrefix = "CustomKeyTesting/";
+            config.ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256;
+            config.ServerSideEncryptionCustomerProvidedKey = "x+AmYqxeD//Ky4vt0HmXxSVGll7TgEkJK6iTPGqFJbk=";
 
-                var myXml = new XElement(ElementName, ElementContent);
-                var myTestName = "friendly";
+            var myXml = new XElement(ElementName, ElementContent);
+            var myTestName = "friendly";
 
-                await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
+            await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
 
-                var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
-                Assert.Equal(1, list.Count);
-                Assert.True(XNode.DeepEquals(myXml, list.First()));
-            }
-            finally
-            {
-                config.SetToDefaults();
-            }
+            Assert.Equal(1, list.Count);
+            Assert.True(XNode.DeepEquals(myXml, list.First()));
         }
 
         [Fact]
         public async Task ExpectNonExistentQueryToSucceedWithZero()
         {
-            try
-            {
-                config.KeyPrefix = "DoesntExist/";
+            config.KeyPrefix = "DoesntExist/";
 
-                var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
-                Assert.Equal(0, list.Count);
-            }
-            finally
-            {
-                config.SetToDefaults();
-            }
+            Assert.Equal(0, list.Count);
         }
 
         [Fact]
         public async Task ExpectEmptyQueryToSucceedWithZero()
         {
-            try
-            {
-                config.KeyPrefix = "NothingHere/";
+            config.KeyPrefix = "NothingHere/";
 
-                var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
-                Assert.Equal(0, list.Count);
-            }
-            finally
-            {
-                config.SetToDefaults();
-            }
+            Assert.Equal(0, list.Count);
         }
 
         [Fact]
         public async Task ExpectLargeQueryToSucceed()
         {
-            try
-            {
-                config.KeyPrefix = "LargeQueryTest/";
+            config.KeyPrefix = "LargeQueryTest/";
 
-                var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
-                var expected = new XElement(ElementName, ElementContent);
-                Assert.Equal(LargeTestNumber, list.Count);
-                foreach (var item in list)
-                {
-                    Assert.True(XNode.DeepEquals(expected, item));
-                }
-            }
-            finally
+            var expected = new XElement(ElementName, ElementContent);
+            Assert.Equal(LargeTestNumber, list.Count);
+            foreach (var item in list)
             {
-                config.SetToDefaults();
+                Assert.True(XNode.DeepEquals(expected, item));
             }
         }
     }

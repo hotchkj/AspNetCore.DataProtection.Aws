@@ -11,9 +11,6 @@ namespace AspNetCore.DataProtection.Aws.Kms
     /// <summary>
     /// Extensions for configuring data protection using an <see cref="IDataProtectionBuilder"/>.
     /// </summary>
-    /// <remarks>
-    /// Taken almost verbatim from https://github.com/aspnet/DataProtection/blob/release/src/Microsoft.AspNetCore.DataProtection/DataProtectionBuilderExtensions.cs
-    /// </remarks>
     public static class DataProtectionBuilderExtensions
     {
         /// <summary>
@@ -44,6 +41,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
             // Need to ensure KmsXmlDecryptor can actually be constructed
             Use(builder.Services, ServiceDescriptor.Singleton(services => kmsClient));
             Use(builder.Services, ServiceDescriptor.Singleton(services => config));
+            Use(builder.Services, ServiceDescriptor.Singleton<IKmsXmlEncryptorConfig>(services => config));
             Use(builder.Services, ServiceDescriptor.Singleton(services => new KmsXmlDecryptor(services)));
             Use(builder.Services, ServiceDescriptor.Singleton<IXmlDecryptor>(services => services.GetRequiredService<KmsXmlDecryptor>()));
             return builder;
@@ -70,6 +68,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
             Use(builder.Services, ServiceDescriptor.Singleton<IXmlEncryptor>(services => new KmsXmlEncryptor(services.GetRequiredService<IAmazonKeyManagementService>(), config, services)));
             // Need to ensure KmsXmlDecryptor can actually be constructed
             Use(builder.Services, ServiceDescriptor.Singleton(services => config));
+            Use(builder.Services, ServiceDescriptor.Singleton<IKmsXmlEncryptorConfig>(services => config));
             Use(builder.Services, ServiceDescriptor.Singleton(services => new KmsXmlDecryptor(services)));
             Use(builder.Services, ServiceDescriptor.Singleton<IXmlDecryptor>(services => services.GetRequiredService<KmsXmlDecryptor>()));
             return builder;
