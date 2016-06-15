@@ -5,7 +5,6 @@ using Amazon.S3;
 using AspNetCore.DataProtection.Aws.S3;
 using System;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -22,13 +21,14 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private const int LargeTestNumber = 2100;
         private const string ElementName = "name";
         private const string ElementContent = "test";
+        internal const string BucketName = "hotchkj-dataprotection-s3-integration-tests-eu-west-1";
 
         public S3IntegrationTests()
         {
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             s3client = new AmazonS3Client(RegionEndpoint.EUWest1);
             // Sadly S3 bucket names are globally unique, so other testers without write access need to change this name
-            config = new S3XmlRepositoryConfig("hotchkj-dataprotection-s3-integration-tests-eu-west-1");
+            config = new S3XmlRepositoryConfig(BucketName);
             xmlRepo = new S3XmlRepository(s3client, config);
         }
 
@@ -47,7 +47,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
                 for (int i = 0; i < LargeTestNumber; ++i)
                 {
-                    await xmlRepo.StoreElementAsync(myXml, "LargeQueryTest" + i.ToString(), CancellationToken.None);
+                    await xmlRepo.StoreElementAsync(myXml, "LargeQueryTest" + i, CancellationToken.None);
                 }
             }
             finally

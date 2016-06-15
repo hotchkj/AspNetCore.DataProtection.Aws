@@ -5,6 +5,7 @@ using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
 using AspNetCore.DataProtection.Aws.Kms;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -12,15 +13,16 @@ using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
-    public class KmsIntegrationTests
+    public class KmsIntegrationTests : IDisposable
     {
         private readonly KmsXmlEncryptor encryptor;
         private readonly KmsXmlDecryptor decryptor;
         private readonly IAmazonKeyManagementService kmsClient;
         private readonly KmsXmlEncryptorConfig encryptConfig;
-        private const string ApplicationName = "hotchkj-test-app";
+        internal const string ApplicationName = "hotchkj-test-app";
         private const string ElementName = "name";
         private const string ElementContent = "test";
+        internal const string KmsTestingKey = "alias/KmsIntegrationTesting";
 
         public KmsIntegrationTests()
         {
@@ -32,7 +34,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             kmsClient = new AmazonKeyManagementServiceClient(RegionEndpoint.EUWest1);
             // Expectation that whatever key is in use has this alias
-            encryptConfig = new KmsXmlEncryptorConfig(ApplicationName, "alias/KmsIntegrationTesting");
+            encryptConfig = new KmsXmlEncryptorConfig(ApplicationName, KmsTestingKey);
 
             encryptor = new KmsXmlEncryptor(kmsClient, encryptConfig, svcProvider);
 
