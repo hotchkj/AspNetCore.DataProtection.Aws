@@ -21,13 +21,13 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private const int LargeTestNumber = 2100;
         private const string ElementName = "name";
         private const string ElementContent = "test";
+        // Sadly S3 bucket names are globally unique, so other testers without write access need to change this name
         internal const string BucketName = "hotchkj-dataprotection-s3-integration-tests-eu-west-1";
 
         public S3IntegrationTests()
         {
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             s3client = new AmazonS3Client(RegionEndpoint.EUWest1);
-            // Sadly S3 bucket names are globally unique, so other testers without write access need to change this name
             config = new S3XmlRepositoryConfig(BucketName);
             xmlRepo = new S3XmlRepository(s3client, config);
         }

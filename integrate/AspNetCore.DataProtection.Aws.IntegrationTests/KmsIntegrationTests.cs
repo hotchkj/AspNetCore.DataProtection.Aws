@@ -22,6 +22,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         internal const string ApplicationName = "hotchkj-test-app";
         private const string ElementName = "name";
         private const string ElementContent = "test";
+        // Expectation that whatever key is in use has this alias
         internal const string KmsTestingKey = "alias/KmsIntegrationTesting";
 
         public KmsIntegrationTests()
@@ -33,7 +34,6 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             kmsClient = new AmazonKeyManagementServiceClient(RegionEndpoint.EUWest1);
-            // Expectation that whatever key is in use has this alias
             encryptConfig = new KmsXmlEncryptorConfig(ApplicationName, KmsTestingKey);
 
             encryptor = new KmsXmlEncryptor(kmsClient, encryptConfig, svcProvider);
