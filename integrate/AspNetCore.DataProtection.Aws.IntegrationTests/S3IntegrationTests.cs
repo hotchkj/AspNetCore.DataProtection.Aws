@@ -85,9 +85,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         }
 
         [Fact]
-        public async Task ExpectBackwardsCompatibilityCompressedStoreRetrieveToSucceed()
+        public async Task ExpectCompatibilityToCompressedStoreRetrieveToSucceed()
         {
-            config.KeyPrefix = "BackwardsCompatibilityCompressTesting/";
+            config.KeyPrefix = "ForwardsCompatibilityCompressTesting/";
             config.ClientSideCompression = false;
 
             var myXml = new XElement(ElementName, ElementContent);
@@ -96,6 +96,25 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
 
             config.ClientSideCompression = true;
+
+            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+
+            Assert.Equal(1, list.Count);
+            Assert.True(XNode.DeepEquals(myXml, list.First()));
+        }
+
+        [Fact]
+        public async Task ExpectCompatibilityFromCompressedStoreRetrieveToSucceed()
+        {
+            config.KeyPrefix = "BackwardsCompatibilityCompressTesting/";
+            config.ClientSideCompression = true;
+
+            var myXml = new XElement(ElementName, ElementContent);
+            var myTestName = "friendly_compressed";
+
+            await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
+
+            config.ClientSideCompression = false;
 
             var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 

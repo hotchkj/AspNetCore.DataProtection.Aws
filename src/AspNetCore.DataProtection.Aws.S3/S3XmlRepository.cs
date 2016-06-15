@@ -149,9 +149,10 @@ namespace AspNetCore.DataProtection.Aws.S3
                     // Not that surprising considering that S3 treats the data as just N bytes; that it was compressed
                     // client-side doesn't really matter.
                     //
-                    // Backwards compatibility - if we set compress=true but load something without
-                    // gzip encoding then skip and load as uncompressed
-                    if (Config.ClientSideCompression && response.Headers.ContentEncoding == "gzip")
+                    // Compatibility: If we set compress=true but load something without gzip encoding then skip and
+                    // load as uncompressed. If we set compress=false but load something with gzip encoding, load as
+                    // compressed otherwise loading won't work.
+                    if (response.Headers.ContentEncoding == "gzip")
                     {
                         using (var responseStream = new GZipStream(response.ResponseStream, CompressionMode.Decompress))
                         {
@@ -219,6 +220,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                 {
                     // Enable S3 to serve the content so that it automatically unzips in browser
                     // Note that this doesn't apply to the streams AWS SDK returns!
+                    // Also provides a very convenient discriminator for whether the key is compressed
                     pr.Headers.ContentEncoding = "gzip";
                     // Weird behaviour around GZipStream. Need to close, but then access the disposed MemoryStream!
                     using (var inputStream = new MemoryStream())

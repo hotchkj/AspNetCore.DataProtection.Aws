@@ -266,7 +266,6 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
             config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
-            config.Setup(x => x.ClientSideCompression).Returns(false);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
                     .ReturnsAsync(listResponse)
@@ -310,7 +309,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         }
 
         [Fact]
-        public void ExpectSingleCompressedQueryToSucceed()
+        public void ExpectSingleUncompressedCompatibleQueryToSucceed()
         {
             var key = "key";
             var etag = "etag";
@@ -332,83 +331,6 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
             config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
-            config.Setup(x => x.ClientSideCompression).Returns(true);
-
-            s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
-                    .ReturnsAsync(listResponse)
-                    .Callback<ListObjectsV2Request, CancellationToken>((lr, ct) =>
-                    {
-                        Assert.Equal(Bucket, lr.BucketName);
-                        Assert.Equal(Prefix, lr.Prefix);
-                        Assert.Null(lr.ContinuationToken);
-                    });
-
-            using (var returnedStream = new MemoryStream())
-            {
-                var myXml = new XElement(ElementName, ElementContent);
-
-                using (var inputStream = new MemoryStream())
-                {
-                    using (var gZippedstream = new GZipStream(inputStream, CompressionMode.Compress))
-                    {
-                        myXml.Save(gZippedstream);
-                    }
-                    var inputArray = inputStream.ToArray();
-                    returnedStream.Write(inputArray, 0, inputArray.Length);
-                }
-                returnedStream.Seek(0, SeekOrigin.Begin);
-
-                var getResponse = new GetObjectResponse
-                {
-                    BucketName = Bucket,
-                    ETag = etag,
-                    Key = key,
-                    ResponseStream = returnedStream
-                };
-                getResponse.Headers.ContentEncoding = "gzip";
-                s3Client.Setup(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), CancellationToken.None))
-                        .ReturnsAsync(getResponse)
-                        .Callback<GetObjectRequest, CancellationToken>((gr, ct) =>
-                        {
-                            Assert.Equal(Bucket, gr.BucketName);
-                            Assert.Equal(key, gr.Key);
-                            Assert.Equal(ServerSideEncryptionCustomerMethod.None, gr.ServerSideEncryptionCustomerMethod);
-                            Assert.Null(gr.ServerSideEncryptionCustomerProvidedKey);
-                            Assert.Null(gr.ServerSideEncryptionCustomerProvidedKeyMD5);
-                        });
-
-                var list = xmlRepository.GetAllElements();
-
-                Assert.Equal(1, list.Count);
-
-                Assert.True(XNode.DeepEquals(myXml, list.First()));
-            }
-        }
-
-        [Fact]
-        public void ExpectSingleUncompressedBackwardsCompatibleQueryToSucceed()
-        {
-            var key = "key";
-            var etag = "etag";
-
-            var listResponse = new ListObjectsV2Response
-            {
-                Name = Bucket,
-                Prefix = Prefix,
-                S3Objects = new List<S3Object>
-                {
-                    new S3Object
-                    {
-                        Key = key,
-                        ETag = etag
-                    }
-                },
-                IsTruncated = false
-            };
-
-            config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
-            config.Setup(x => x.ClientSideCompression).Returns(true);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
                     .ReturnsAsync(listResponse)
@@ -433,6 +355,80 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                     ResponseStream = returnedStream
                 };
                 // No Content-Encoding specified
+                s3Client.Setup(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), CancellationToken.None))
+                        .ReturnsAsync(getResponse)
+                        .Callback<GetObjectRequest, CancellationToken>((gr, ct) =>
+                        {
+                            Assert.Equal(Bucket, gr.BucketName);
+                            Assert.Equal(key, gr.Key);
+                            Assert.Equal(ServerSideEncryptionCustomerMethod.None, gr.ServerSideEncryptionCustomerMethod);
+                            Assert.Null(gr.ServerSideEncryptionCustomerProvidedKey);
+                            Assert.Null(gr.ServerSideEncryptionCustomerProvidedKeyMD5);
+                        });
+
+                var list = xmlRepository.GetAllElements();
+
+                Assert.Equal(1, list.Count);
+
+                Assert.True(XNode.DeepEquals(myXml, list.First()));
+            }
+        }
+
+        [Fact]
+        public void ExpectSingleCompressedCompatibleQueryToSucceed()
+        {
+            var key = "key";
+            var etag = "etag";
+
+            var listResponse = new ListObjectsV2Response
+            {
+                Name = Bucket,
+                Prefix = Prefix,
+                S3Objects = new List<S3Object>
+                {
+                    new S3Object
+                    {
+                        Key = key,
+                        ETag = etag
+                    }
+                },
+                IsTruncated = false
+            };
+
+            config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
+            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
+
+            s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
+                    .ReturnsAsync(listResponse)
+                    .Callback<ListObjectsV2Request, CancellationToken>((lr, ct) =>
+                    {
+                        Assert.Equal(Bucket, lr.BucketName);
+                        Assert.Equal(Prefix, lr.Prefix);
+                        Assert.Null(lr.ContinuationToken);
+                    });
+
+            using (var returnedStream = new MemoryStream())
+            {
+                var myXml = new XElement(ElementName, ElementContent);
+                using (var inputStream = new MemoryStream())
+                {
+                    using (var gZippedstream = new GZipStream(inputStream, CompressionMode.Compress))
+                    {
+                        myXml.Save(gZippedstream);
+                    }
+                    var inputArray = inputStream.ToArray();
+                    returnedStream.Write(inputArray, 0, inputArray.Length);
+                }
+                returnedStream.Seek(0, SeekOrigin.Begin);
+
+                var getResponse = new GetObjectResponse
+                {
+                    BucketName = Bucket,
+                    ETag = etag,
+                    Key = key,
+                    ResponseStream = returnedStream
+                };
+                getResponse.Headers.ContentEncoding = "gzip";
                 s3Client.Setup(x => x.GetObjectAsync(It.IsAny<GetObjectRequest>(), CancellationToken.None))
                         .ReturnsAsync(getResponse)
                         .Callback<GetObjectRequest, CancellationToken>((gr, ct) =>
@@ -478,7 +474,6 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.AES256);
             config.Setup(x => x.ServerSideEncryptionCustomerProvidedKey).Returns(AESKey);
             config.Setup(x => x.ServerSideEncryptionCustomerProvidedKeyMD5).Returns(md5);
-            config.Setup(x => x.ClientSideCompression).Returns(false);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
                     .ReturnsAsync(listResponse)
@@ -562,7 +557,6 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
             config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
-            config.Setup(x => x.ClientSideCompression).Returns(false);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.Is<ListObjectsV2Request>(lr => lr.ContinuationToken == null), CancellationToken.None))
                     .ReturnsAsync(listResponse1)
