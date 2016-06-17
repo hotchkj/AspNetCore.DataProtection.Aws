@@ -35,7 +35,7 @@ public void ConfigureServices(IServiceCollection services)
             ServerSideEncryptionCustomerProvidedKeyMD5 = "MD5OfMyBase64Key",
             ServerSideEncryptionKeyManagementServiceKeyId = "AwsKeyManagementServiceId",
             // Compress stored XML before write to S3
-            Compress = true
+            ClientSideCompression = true
         });
     });
 }
