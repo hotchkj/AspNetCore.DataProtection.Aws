@@ -1,7 +1,9 @@
 ﻿// Copyright(c) 2016 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon;
+using Amazon.KeyManagementService;
 using Amazon.S3;
+using AspNetCore.DataProtection.Aws.Kms;
 using AspNetCore.DataProtection.Aws.S3;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNet.DataProtection.KeyManagement;
@@ -14,35 +16,40 @@ using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
-    public sealed class S3ManagerIntegrationTests : IDisposable
+    public sealed class CombinedManagerIntegrationTests : IDisposable
     {
         private readonly IAmazonS3 s3client;
+        private readonly IAmazonKeyManagementService kmsClient;
         private readonly ICleanupS3 s3cleanup;
 
-        public S3ManagerIntegrationTests()
+        public CombinedManagerIntegrationTests()
         {
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             s3client = new AmazonS3Client(RegionEndpoint.EUWest1);
+            kmsClient = new AmazonKeyManagementServiceClient(RegionEndpoint.EUWest1);
             s3cleanup = new CleanupS3(s3client);
         }
 
         public void Dispose()
         {
             s3client.Dispose();
+            kmsClient.Dispose();
         }
-        
+
         [Fact]
         public async Task ExpectFullKeyManagerExplicitAwsStoreRetrieveToSucceed()
         {
-            var config = new S3XmlRepositoryConfig(S3IntegrationTests.BucketName);
-            config.KeyPrefix = "RealXmlKeyManager1/";
-            await s3cleanup.ClearKeys(S3IntegrationTests.BucketName, config.KeyPrefix);
+            var s3Config = new S3XmlRepositoryConfig(S3IntegrationTests.BucketName);
+            s3Config.KeyPrefix = "CombinedXmlKeyManager1/";
+            await s3cleanup.ClearKeys(S3IntegrationTests.BucketName, s3Config.KeyPrefix);
+            var kmsConfig = new KmsXmlEncryptorConfig(KmsIntegrationTests.ApplicationName, KmsIntegrationTests.KmsTestingKey);
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddDataProtection();
             serviceCollection.ConfigureDataProtection(configure =>
             {
-                configure.PersistKeysToAwsS3(s3client, config);
+                configure.PersistKeysToAwsS3(s3client, s3Config);
+                configure.ProtectKeysWithAwsKms(kmsClient, kmsConfig);
             });
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -64,16 +71,19 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         [Fact]
         public async Task ExpectFullKeyManagerStoreRetrieveToSucceed()
         {
-            var config = new S3XmlRepositoryConfig(S3IntegrationTests.BucketName);
-            config.KeyPrefix = "RealXmlKeyManager2/";
-            await s3cleanup.ClearKeys(S3IntegrationTests.BucketName, config.KeyPrefix);
+            var s3Config = new S3XmlRepositoryConfig(S3IntegrationTests.BucketName);
+            s3Config.KeyPrefix = "CombinedXmlKeyManager2/";
+            await s3cleanup.ClearKeys(S3IntegrationTests.BucketName, s3Config.KeyPrefix);
+            var kmsConfig = new KmsXmlEncryptorConfig(KmsIntegrationTests.ApplicationName, KmsIntegrationTests.KmsTestingKey);
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance(s3client);
+            serviceCollection.AddInstance(kmsClient);
             serviceCollection.AddDataProtection();
             serviceCollection.ConfigureDataProtection(configure =>
             {
-                configure.PersistKeysToAwsS3(config);
+                configure.PersistKeysToAwsS3(s3Config);
+                configure.ProtectKeysWithAwsKms(kmsConfig);
             });
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
