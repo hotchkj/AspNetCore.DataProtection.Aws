@@ -16,28 +16,25 @@ In Startup.cs, specified as part of DataProtection configuration:
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddDataProtection();
-    services.ConfigureDataProtection(configure =>
-    {
-        configure.PersistKeysToAwsS3(new AmazonS3Client(), new S3XmlRepositoryConfig("my-bucket-name")
-        // Configuration has defaults; all below are optional
-        {
-            // How many concurrent connections will be made to S3 to retrieve key data
-            MaxS3QueryConcurrency = 10,
-            // Custom prefix in the S3 bucket enabling use of folders
-            KeyPrefix = "MyKeys/",
-            // Customise storage class for key storage
-            StorageClass = S3StorageClass.Standard,
-            // Customise encryption options (these can be mutually exclusive - don't just copy & paste!)
-            ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256,
-            ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256,
-            ServerSideEncryptionCustomerProvidedKey = "MyBase64Key",
-            ServerSideEncryptionCustomerProvidedKeyMD5 = "MD5OfMyBase64Key",
-            ServerSideEncryptionKeyManagementServiceKeyId = "AwsKeyManagementServiceId",
-            // Compress stored XML before write to S3
-            ClientSideCompression = true
-        });
-    });
+    services.AddDataProtection()
+            .PersistKeysToAwsS3(new AmazonS3Client(), new S3XmlRepositoryConfig("my-bucket-name")
+            // Configuration has defaults; all below are optional
+            {
+                // How many concurrent connections will be made to S3 to retrieve key data
+                MaxS3QueryConcurrency = 10,
+                // Custom prefix in the S3 bucket enabling use of folders
+                KeyPrefix = "MyKeys/",
+                // Customise storage class for key storage
+                StorageClass = S3StorageClass.Standard,
+                // Customise encryption options (these can be mutually exclusive - don't just copy & paste!)
+                ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256,
+                ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256,
+                ServerSideEncryptionCustomerProvidedKey = "MyBase64Key",
+                ServerSideEncryptionCustomerProvidedKeyMD5 = "MD5OfMyBase64Key",
+                ServerSideEncryptionKeyManagementServiceKeyId = "AwsKeyManagementServiceId",
+                // Compress stored XML before write to S3
+                ClientSideCompression = true
+            });
 }
 ```
 If the `IAmazonS3` interface is discoverable via Dependency Injection in `IServiceCollection`, the constructor argument of `AmazonS3Client` can be omitted.
@@ -54,15 +51,13 @@ In Startup.cs, specified as part of DataProtection configuration:
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddDataProtection();
-    services.ConfigureDataProtection(configure =>
-    {
-        var kmsConfig = new KmsXmlEncryptorConfig("my-application-name", "alias/MyKmsAlias");
-        // Configuration has default contexts added; below are optional if using grants or additional contexts
-        kmsConfig.EncryptionContext.Add("my-custom-context", "my-custom-value");
-        kmsConfig.GrantTokens.Add("my-grant-token");
-        configure.ProtectKeysWithAwsKms(new AmazonKeyManagementServiceClient(), kmsConfig);
-    });
+    var kmsConfig = new KmsXmlEncryptorConfig("my-application-name", "alias/MyKmsAlias");
+    // Configuration has default contexts added; below are optional if using grants or additional contexts
+    kmsConfig.EncryptionContext.Add("my-custom-context", "my-custom-value");
+    kmsConfig.GrantTokens.Add("my-grant-token");
+
+    services.AddDataProtection()
+            .ProtectKeysWithAwsKms(new AmazonKeyManagementServiceClient(), kmsConfig);
 }
 ```
 If the `IAmazonKeyManagementService` interface is discoverable via Dependency Injection in `IServiceCollection`, the constructor argument of `AmazonKeyManagementServiceClient` can be omitted.
