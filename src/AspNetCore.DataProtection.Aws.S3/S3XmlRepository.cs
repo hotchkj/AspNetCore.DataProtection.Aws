@@ -23,7 +23,9 @@ namespace AspNetCore.DataProtection.Aws.S3
     /// </summary>
     public class S3XmlRepository : IXmlRepository
     {
-        private readonly ILogger _logger;
+        private readonly ILogger logger;
+        private readonly IMockingWrapper mockWrapper;
+        public const string FriendlyNameMetadata = "xml-friendly-name";
 
         /// <summary>
         /// Creates a <see cref="S3XmlRepository"/> with keys stored at the given bucket.
@@ -42,6 +44,11 @@ namespace AspNetCore.DataProtection.Aws.S3
 		/// <param name="config">The configuration object specifying how to write to S3.</param>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
         public S3XmlRepository(IAmazonS3 s3client, IS3XmlRepositoryConfig config, IServiceProvider services)
+            : this(s3client, config, services, new MockingWrapper())
+        {
+        }
+
+        public S3XmlRepository(IAmazonS3 s3client, IS3XmlRepositoryConfig config, IServiceProvider services, IMockingWrapper mockWrapper)
         {
             if (s3client == null)
             {
@@ -56,7 +63,8 @@ namespace AspNetCore.DataProtection.Aws.S3
             S3Client = s3client;
             Config = config;
             Services = services;
-            _logger = services?.GetService<ILoggerFactory>()?.CreateLogger<S3XmlRepository>();
+            logger = services?.GetService<ILoggerFactory>()?.CreateLogger<S3XmlRepository>();
+            this.mockWrapper = mockWrapper;
         }
 
         /// <summary>
@@ -123,7 +131,7 @@ namespace AspNetCore.DataProtection.Aws.S3
 
             try
             {
-                _logger?.LogDebug("Retrieving DataProtection key at S3 location {0} in bucket {1}", item.Key, Config.Bucket);
+                logger?.LogDebug("Retrieving DataProtection key at S3 location {0} in bucket {1}", item.Key, Config.Bucket);
 
                 var gr = new GetObjectRequest
                 {
@@ -179,17 +187,8 @@ namespace AspNetCore.DataProtection.Aws.S3
         // Not part of the IXmlRepository interface
         public async Task StoreElementAsync(XElement element, string friendlyName, CancellationToken ct)
         {
-            string key;
-            if (!IsSafeS3Key(friendlyName))
-            {
-                key = Config.KeyPrefix + Guid.NewGuid() + ".xml";
-                _logger?.LogWarning("Storing DataProtection key with friendly name {0} is not safe for S3. Ignoring and storing at S3 location {1} in bucket {2}", friendlyName, key, Config.Bucket);
-            }
-            else
-            {
-                key = Config.KeyPrefix + friendlyName + ".xml";
-                _logger?.LogDebug("Storing DataProtection key at S3 location {0} in bucket {1}", key, Config.Bucket);
-            }
+            string key = Config.KeyPrefix + mockWrapper.GetNewGuid() + ".xml";
+            logger?.LogDebug("Storing DataProtection key at S3 location {0} in bucket {1}, friendly name of {2} as metadata", key, Config.Bucket, friendlyName);
 
             var pr = new PutObjectRequest
             {
@@ -202,6 +201,8 @@ namespace AspNetCore.DataProtection.Aws.S3
                 ContentType = "text/xml",
                 StorageClass = Config.StorageClass
             };
+            pr.Metadata.Add(FriendlyNameMetadata, friendlyName);
+
             if (Config.ServerSideEncryptionMethod == ServerSideEncryptionMethod.AWSKMS)
             {
                 pr.ServerSideEncryptionKeyManagementServiceKeyId = Config.ServerSideEncryptionKeyManagementServiceKeyId;
@@ -247,29 +248,6 @@ namespace AspNetCore.DataProtection.Aws.S3
 
                 await S3Client.PutObjectAsync(pr, ct).ConfigureAwait(false);
             }
-        }
-
-        internal static bool IsSafeS3Key(string key)
-        {
-            // From S3 docs:
-            // The following character sets are generally safe for use in key names:
-            // Alphanumeric characters[0 - 9a - zA - Z]
-            // Special characters !, -, _, ., *, ', (, and )
-            // Singular entry of the folder delimiter is considered ill advised
-            return (!string.IsNullOrEmpty(key) && key.All(c =>
-                c == '!'
-                || c == '-'
-                || c == '_'
-                || c == '.'
-                || c == '*'
-                || c == '\''
-                || c == '('
-                || c == ')'
-                || c == '/'
-                || ('0' <= c && c <= '9')
-                || ('A' <= c && c <= 'Z')
-                || ('a' <= c && c <= 'z')) &&
-                !key.StartsWith("/"));
         }
     }
 }

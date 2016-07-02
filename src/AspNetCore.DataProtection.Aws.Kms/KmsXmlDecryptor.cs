@@ -15,7 +15,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
 {
     public class KmsXmlDecryptor : IXmlDecryptor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Creates a <see cref="KmsXmlDecryptor"/> for decrypting ASP.NET keys with a KMS master key
@@ -36,7 +36,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
             KmsClient = services.GetRequiredService<IAmazonKeyManagementService>();
             Config = services.GetRequiredService<IKmsXmlEncryptorConfig>();
             Services = services;
-            _logger = services.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlDecryptor>();
+            logger = services.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlDecryptor>();
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
 
         public async Task<XElement> DecryptAsync(XElement encryptedElement, CancellationToken ct)
         {
-            _logger?.LogDebug("Decrypting ciphertext DataProtection key using AWS key {0}", Config.KeyId);
+            logger?.LogDebug("Decrypting ciphertext DataProtection key using AWS key {0}", Config.KeyId);
 
             using (var memoryStream = new MemoryStream())
             {

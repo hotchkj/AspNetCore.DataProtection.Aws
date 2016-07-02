@@ -15,7 +15,7 @@ using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
-    public class KmsDecryptorTests : IDisposable
+    public class KmsXmlDecryptorTests : IDisposable
     {
         private readonly KmsXmlDecryptor decryptor;
         private readonly MockRepository repository;
@@ -26,7 +26,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private readonly Dictionary<string, string> EncryptionContext = new Dictionary<string, string>();
         private readonly List<string> GrantTokens = new List<string>();
 
-        public KmsDecryptorTests()
+        public KmsXmlDecryptorTests()
         {
             repository = new MockRepository(MockBehavior.Strict);
             kmsClient = repository.Create<IAmazonKeyManagementService>();
