@@ -15,7 +15,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
 {
     public class KmsXmlEncryptor : IXmlEncryptor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Creates a <see cref="KmsXmlEncryptor"/> for encrypting ASP.NET keys with a KMS master key
@@ -48,7 +48,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
             KmsClient = kmsClient;
             Config = config;
             Services = services;
-            _logger = services?.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlEncryptor>();
+            logger = services?.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlEncryptor>();
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
 
         public async Task<EncryptedXmlInfo> EncryptAsync(XElement plaintextElement, CancellationToken ct)
         {
-            _logger?.LogDebug("Encrypting plaintext DataProtection key using AWS key {0}", Config.KeyId);
+            logger?.LogDebug("Encrypting plaintext DataProtection key using AWS key {0}", Config.KeyId);
 
             // Some implementations of this e.g. DpapiXmlEncryptor go to enormous lengths to
             // create a memory stream, use unsafe code to zero it, and so on.

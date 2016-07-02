@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon.S3;
 using System;
+using System.Linq;
 
 namespace AspNetCore.DataProtection.Aws.S3
 {
@@ -51,7 +52,7 @@ namespace AspNetCore.DataProtection.Aws.S3
             }
             set
             {
-                if (!S3XmlRepository.IsSafeS3Key(value))
+                if (!IsSafeS3Key(value))
                 {
                     throw new ArgumentException($"Specified key prefix {value} is not considered a safe S3 name", "value");
                 }
@@ -66,5 +67,28 @@ namespace AspNetCore.DataProtection.Aws.S3
         public bool ClientSideCompression { get; set; }
 
         private string _keyPrefix;
+
+        internal static bool IsSafeS3Key(string key)
+        {
+            // From S3 docs:
+            // The following character sets are generally safe for use in key names:
+            // Alphanumeric characters[0 - 9a - zA - Z]
+            // Special characters !, -, _, ., *, ', (, and )
+            // Singular entry of the folder delimiter is considered ill advised
+            return (!string.IsNullOrEmpty(key) && key.All(c =>
+                c == '!'
+                || c == '-'
+                || c == '_'
+                || c == '.'
+                || c == '*'
+                || c == '\''
+                || c == '('
+                || c == ')'
+                || c == '/'
+                || ('0' <= c && c <= '9')
+                || ('A' <= c && c <= 'Z')
+                || ('a' <= c && c <= 'z')) &&
+                !key.StartsWith("/"));
+        }
     }
 }

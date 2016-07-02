@@ -37,6 +37,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                 throw new ArgumentNullException(nameof(config));
             }
 
+            Use(builder.Services, ServiceDescriptor.Singleton<IMockingWrapper, MockingWrapper>());
             Use(builder.Services, ServiceDescriptor.Singleton<IXmlRepository>(services => new S3XmlRepository(s3Client, config, services)));
             return builder;
         }
@@ -59,6 +60,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                 throw new ArgumentNullException(nameof(config));
             }
 
+            Use(builder.Services, ServiceDescriptor.Singleton<IMockingWrapper, MockingWrapper>());
             Use(builder.Services, ServiceDescriptor.Singleton<IXmlRepository>(services => new S3XmlRepository(services.GetRequiredService<IAmazonS3>(), config, services)));
             return builder;
         }

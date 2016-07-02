@@ -15,6 +15,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
     public sealed class S3IntegrationTests : IDisposable
     {
         private readonly IAmazonS3 s3client;
+        private readonly ICleanupS3 s3cleanup;
         private readonly S3XmlRepository xmlRepo;
         private readonly S3XmlRepositoryConfig config;
         // Usual max keys in S3 queries is 1000, so this should ensure we have several re-queries
@@ -32,6 +33,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             // Override the default for ease of debugging. Explicitly turn on for compression tests.
             config.ClientSideCompression = false;
             xmlRepo = new S3XmlRepository(s3client, config);
+            s3cleanup = new CleanupS3(s3client);
         }
 
         public void Dispose()
@@ -55,6 +57,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         public async Task ExpectDefaultStoreRetrieveToSucceed()
         {
             config.KeyPrefix = "DefaultTesting/";
+            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly";
@@ -72,6 +75,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             config.KeyPrefix = "CompressTesting/";
             config.ClientSideCompression = true;
+            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly_compressed";
@@ -89,6 +93,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             config.KeyPrefix = "ForwardsCompatibilityCompressTesting/";
             config.ClientSideCompression = false;
+            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly_not_so_compressed";
@@ -108,6 +113,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             config.KeyPrefix = "BackwardsCompatibilityCompressTesting/";
             config.ClientSideCompression = true;
+            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly_compressed";
@@ -128,6 +134,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.KeyPrefix = "KmsTesting/";
             config.ServerSideEncryptionKeyManagementServiceKeyId = "alias/KmsIntegrationTesting";
             config.ServerSideEncryptionMethod = ServerSideEncryptionMethod.AWSKMS;
+            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly";
@@ -146,6 +153,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.KeyPrefix = "CustomKeyTesting/";
             config.ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256;
             config.ServerSideEncryptionCustomerProvidedKey = "x+AmYqxeD//Ky4vt0HmXxSVGll7TgEkJK6iTPGqFJbk=";
+            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly";

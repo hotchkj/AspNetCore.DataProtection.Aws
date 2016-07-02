@@ -21,18 +21,22 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private readonly MockRepository repository;
         private readonly Mock<IAmazonS3> s3Client;
         private readonly Mock<IS3XmlRepositoryConfig> config;
+        private readonly Mock<IMockingWrapper> mockingWrapper;
         private const string ElementName = "name";
         private const string ElementContent = "test";
         private const string Bucket = "bucket";
         private const string Prefix = "prefix";
         private const string AESKey = "x+AmYqxeD//Ky4vt0HmXxSVGll7TgEkJK6iTPGqFJbk=";
+        private const string AwsStandardMetadata = "x-amz-meta-";
+        private const string FriendlyNameMetadata = AwsStandardMetadata + S3XmlRepository.FriendlyNameMetadata;
 
         public S3RespositoryTests()
         {
             repository = new MockRepository(MockBehavior.Strict);
             s3Client = repository.Create<IAmazonS3>();
             config = repository.Create<IS3XmlRepositoryConfig>();
-            xmlRepository = new S3XmlRepository(s3Client.Object, config.Object);
+            mockingWrapper = repository.Create<IMockingWrapper>();
+            xmlRepository = new S3XmlRepository(s3Client.Object, config.Object, null, mockingWrapper.Object);
 
             config.Setup(x => x.Bucket).Returns(Bucket);
             config.Setup(x => x.KeyPrefix).Returns(Prefix);
@@ -57,6 +61,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
             config.Setup(x => x.ClientSideCompression).Returns(false);
 
+            var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
+            mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
+
             s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
                     .ReturnsAsync(response)
                     .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
@@ -68,7 +75,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                         Assert.Null(pr.ServerSideEncryptionCustomerProvidedKeyMD5);
                         Assert.Null(pr.ServerSideEncryptionKeyManagementServiceKeyId);
                         Assert.Equal(S3StorageClass.Standard, pr.StorageClass);
-                        Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
+                        Assert.Equal(Prefix + guid + ".xml", pr.Key);
+                        Assert.Contains(FriendlyNameMetadata, pr.Metadata.Keys);
+                        Assert.Equal(myTestName, pr.Metadata[FriendlyNameMetadata]);
 
                         var body = XElement.Load(pr.InputStream);
                         Assert.True(XNode.DeepEquals(myXml, body));
@@ -92,6 +101,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.Setup(x => x.ServerSideEncryptionKeyManagementServiceKeyId).Returns(keyId);
             config.Setup(x => x.ClientSideCompression).Returns(false);
 
+            var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
+            mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
+
             s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
                     .ReturnsAsync(response)
                     .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
@@ -103,7 +115,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                         Assert.Null(pr.ServerSideEncryptionCustomerProvidedKeyMD5);
                         Assert.Equal(keyId, pr.ServerSideEncryptionKeyManagementServiceKeyId);
                         Assert.Equal(S3StorageClass.Standard, pr.StorageClass);
-                        Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
+                        Assert.Equal(Prefix + guid + ".xml", pr.Key);
+                        Assert.Contains(FriendlyNameMetadata, pr.Metadata.Keys);
+                        Assert.Equal(myTestName, pr.Metadata[FriendlyNameMetadata]);
 
                         var body = XElement.Load(pr.InputStream);
                         Assert.True(XNode.DeepEquals(myXml, body));
@@ -129,6 +143,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.Setup(x => x.ServerSideEncryptionCustomerProvidedKeyMD5).Returns(md5);
             config.Setup(x => x.ClientSideCompression).Returns(false);
 
+            var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
+            mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
+
             s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
                     .ReturnsAsync(response)
                     .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
@@ -140,7 +157,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                         Assert.Equal(md5, pr.ServerSideEncryptionCustomerProvidedKeyMD5);
                         Assert.Null(pr.ServerSideEncryptionKeyManagementServiceKeyId);
                         Assert.Equal(S3StorageClass.Standard, pr.StorageClass);
-                        Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
+                        Assert.Equal(Prefix + guid + ".xml", pr.Key);
+                        Assert.Contains(FriendlyNameMetadata, pr.Metadata.Keys);
+                        Assert.Equal(myTestName, pr.Metadata[FriendlyNameMetadata]);
 
                         var body = XElement.Load(pr.InputStream);
                         Assert.True(XNode.DeepEquals(myXml, body));
@@ -163,6 +182,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
             config.Setup(x => x.ClientSideCompression).Returns(false);
 
+            var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
+            mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
+
             s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
                     .ReturnsAsync(response)
                     .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
@@ -174,7 +196,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                         Assert.Null(pr.ServerSideEncryptionCustomerProvidedKeyMD5);
                         Assert.Null(pr.ServerSideEncryptionKeyManagementServiceKeyId);
                         Assert.Equal(S3StorageClass.ReducedRedundancy, pr.StorageClass);
-                        Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
+                        Assert.Equal(Prefix + guid + ".xml", pr.Key);
+                        Assert.Contains(FriendlyNameMetadata, pr.Metadata.Keys);
+                        Assert.Equal(myTestName, pr.Metadata[FriendlyNameMetadata]);
 
                         var body = XElement.Load(pr.InputStream);
                         Assert.True(XNode.DeepEquals(myXml, body));
@@ -197,6 +221,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
             config.Setup(x => x.ClientSideCompression).Returns(true);
 
+            var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
+            mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
+
             s3Client.Setup(x => x.PutObjectAsync(It.IsAny<PutObjectRequest>(), CancellationToken.None))
                     .ReturnsAsync(response)
                     .Callback<PutObjectRequest, CancellationToken>((pr, ct) =>
@@ -208,8 +235,10 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                         Assert.Null(pr.ServerSideEncryptionCustomerProvidedKeyMD5);
                         Assert.Null(pr.ServerSideEncryptionKeyManagementServiceKeyId);
                         Assert.Equal(S3StorageClass.Standard, pr.StorageClass);
-                        Assert.Equal(Prefix + myTestName + ".xml", pr.Key);
+                        Assert.Equal(Prefix + guid + ".xml", pr.Key);
                         Assert.Equal("gzip", pr.Headers.ContentEncoding);
+                        Assert.Contains(FriendlyNameMetadata, pr.Metadata.Keys);
+                        Assert.Equal(myTestName, pr.Metadata[FriendlyNameMetadata]);
 
                         var body = XElement.Load(new GZipStream(pr.InputStream, CompressionMode.Decompress));
                         Assert.True(XNode.DeepEquals(myXml, body));
