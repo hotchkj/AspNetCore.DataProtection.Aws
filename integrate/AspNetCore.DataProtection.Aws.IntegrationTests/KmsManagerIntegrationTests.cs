@@ -3,9 +3,9 @@
 using Amazon;
 using Amazon.KeyManagementService;
 using AspNetCore.DataProtection.Aws.Kms;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using Microsoft.AspNet.DataProtection.KeyManagement;
-using Microsoft.AspNet.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
@@ -34,12 +34,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             var config = new KmsXmlEncryptorConfig(KmsIntegrationTests.ApplicationName, KmsIntegrationTests.KmsTestingKey);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddDataProtection();
-            serviceCollection.ConfigureDataProtection(configure =>
-            {
-                configure.ProtectKeysWithAwsKms(kmsClient, config);
-            });
-            serviceCollection.AddInstance<IXmlRepository>(new EphemeralXmlRepository());
+            serviceCollection.AddDataProtection()
+                             .ProtectKeysWithAwsKms(kmsClient, config);
+            serviceCollection.AddSingleton<IXmlRepository, EphemeralXmlRepository>();
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IXmlRepository>(),
@@ -63,13 +60,10 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             var config = new KmsXmlEncryptorConfig(KmsIntegrationTests.ApplicationName, KmsIntegrationTests.KmsTestingKey);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance(kmsClient);
-            serviceCollection.AddDataProtection();
-            serviceCollection.ConfigureDataProtection(configure =>
-            {
-                configure.ProtectKeysWithAwsKms(config);
-            });
-            serviceCollection.AddInstance<IXmlRepository>(new EphemeralXmlRepository());
+            serviceCollection.AddSingleton(kmsClient);
+            serviceCollection.AddDataProtection()
+                             .ProtectKeysWithAwsKms(config);
+            serviceCollection.AddSingleton<IXmlRepository, EphemeralXmlRepository>();
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IXmlRepository>(),

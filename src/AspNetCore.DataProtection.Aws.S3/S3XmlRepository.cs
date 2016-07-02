@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon.S3;
 using Amazon.S3.Model;
-using Microsoft.AspNet.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;

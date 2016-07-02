@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0.
 //
 // Copied verbatim as a useful testing internal implementation detail
-using Microsoft.AspNet.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

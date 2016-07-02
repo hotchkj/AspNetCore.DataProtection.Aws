@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
-using Microsoft.AspNet.DataProtection.XmlEncryption;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;

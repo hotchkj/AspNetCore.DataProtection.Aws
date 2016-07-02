@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon.KeyManagementService;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.DataProtection.XmlEncryption;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using System;
 
 namespace AspNetCore.DataProtection.Aws.Kms
@@ -20,7 +20,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <param name="kmsClient">KMS client configured with appropriate credentials.</param>
         /// <param name="config">The configuration object specifying how use KMS keys.</param>
         /// <returns>A reference to the <see cref="DataProtectionConfiguration" /> after this operation has completed.</returns>
-        public static DataProtectionConfiguration ProtectKeysWithAwsKms(this DataProtectionConfiguration builder, IAmazonKeyManagementService kmsClient, KmsXmlEncryptorConfig config)
+        public static IDataProtectionBuilder ProtectKeysWithAwsKms(this IDataProtectionBuilder builder, IAmazonKeyManagementService kmsClient, KmsXmlEncryptorConfig config)
         {
             if (builder == null)
             {
@@ -53,7 +53,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <param name="builder">The <see cref="DataProtectionConfiguration"/>.</param>
         /// <param name="config">The configuration object specifying how use KMS keys.</param>
         /// <returns>A reference to the <see cref="DataProtectionConfiguration" /> after this operation has completed.</returns>
-        public static DataProtectionConfiguration ProtectKeysWithAwsKms(this DataProtectionConfiguration builder, KmsXmlEncryptorConfig config)
+        public static IDataProtectionBuilder ProtectKeysWithAwsKms(this IDataProtectionBuilder builder, KmsXmlEncryptorConfig config)
         {
             if (builder == null)
             {

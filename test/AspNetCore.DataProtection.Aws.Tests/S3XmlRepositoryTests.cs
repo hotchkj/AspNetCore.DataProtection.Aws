@@ -13,7 +13,7 @@ using System.Threading;
 using System.Xml.Linq;
 using Xunit;
 
-namespace AspNetCore.DataProtection.Aws.IntegrationTests
+namespace AspNetCore.DataProtection.Aws.Tests
 {
     public sealed class S3XmlRespositoryTests : IDisposable
     {

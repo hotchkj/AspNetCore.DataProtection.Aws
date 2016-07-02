@@ -1,25 +1,29 @@
 {
-  "summary": "ASP.NET AWS S3 DataProtection Repository",
   "description": "DataProtection repository for use with AWS S3 (DNX RC1)",
-  "projectUrl": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws",
-  "licenseUrl": "https://opensource.org/licenses/MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws"
-  },
-  "owners": [ "hotchkj" ],
   "authors": [ "hotchkj" ],
-  "version": "1.0.0-alpha05",
+  "version": "1.0.0-beta01",
 
-  "compilationOptions": {
+  "packOptions": {
+    "owners": [ "hotchkj" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws"
+    },
+    "summary": "ASP.NET AWS S3 DataProtection Repository",
+    "tags": [ "ASP.NET", "AWS", "DataProtection", "netcore" ],
+    "releaseNotes": "Updated to .NET Core",
+    "projectUrl": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws",
+    "licenseUrl": "https://opensource.org/licenses/MIT"
+  },
+
+  "buildOptions": {
     "emitEntryPoint": false,
-    "warningsAsErrors": true,
-    "keyFile": "../../shared.snk"
+    "warningsAsErrors": true
   },
 
   "dependencies": {
-    "AWSSDK.S3": "3.1.7",
-    "Microsoft.AspNet.DataProtection": "1.0.0-rc1-final"
+    "AWSSDK.S3": "3.2.5-beta",
+    "Microsoft.AspNetCore.DataProtection": "1.0.0"
   },
 
   "frameworks": {
@@ -27,8 +31,14 @@
       "dependencies": {
       }
     },
-    "dnx451": {
+    "netcore50": {
       "dependencies": {
+        "System.IO.Compression": "4.1.0"
+      }
+    },
+    "netstandard1.5": {
+      "dependencies": {
+        "System.IO.Compression": "4.1.0"
       }
     }
   }

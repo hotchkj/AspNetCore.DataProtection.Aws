@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Amazon.S3;
 
 namespace AspNetCore.DataProtection.Aws.S3
@@ -20,7 +20,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// <param name="s3Client">S3 client configured with appropriate credentials.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
         /// <returns>A reference to the <see cref="DataProtectionConfiguration" /> after this operation has completed.</returns>
-        public static DataProtectionConfiguration PersistKeysToAwsS3(this DataProtectionConfiguration builder, IAmazonS3 s3Client, S3XmlRepositoryConfig config)
+        public static IDataProtectionBuilder PersistKeysToAwsS3(this IDataProtectionBuilder builder, IAmazonS3 s3Client, S3XmlRepositoryConfig config)
         {
             if (builder == null)
             {
@@ -48,7 +48,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// <param name="builder">The <see cref="DataProtectionConfiguration"/>.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
         /// <returns>A reference to the <see cref="DataProtectionConfiguration" /> after this operation has completed.</returns>
-        public static DataProtectionConfiguration PersistKeysToAwsS3(this DataProtectionConfiguration builder, S3XmlRepositoryConfig config)
+        public static IDataProtectionBuilder PersistKeysToAwsS3(this IDataProtectionBuilder builder, S3XmlRepositoryConfig config)
         {
             if (builder == null)
             {
