@@ -1,7 +1,8 @@
 {
   "description": "DataProtection encrypter & decrypter for use with AWS KMS",
-  "authors": [ "hotchkj" ],
   "version": "1.0.0-beta01",
+  "authors": [ "hotchkj" ],
+  "owners": [ "hotchkj" ],
 
   "packOptions": {
     "owners": [ "hotchkj" ],

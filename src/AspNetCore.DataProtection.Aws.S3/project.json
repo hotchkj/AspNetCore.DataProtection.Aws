@@ -1,7 +1,8 @@
 {
-  "description": "DataProtection repository for use with AWS S3 (DNX RC1)",
-  "authors": [ "hotchkj" ],
+  "description": "DataProtection repository for use with AWS S3",
   "version": "1.0.0-beta01",
+  "authors": [ "hotchkj" ],
+  "owners": [ "hotchkj" ],
 
   "packOptions": {
     "owners": [ "hotchkj" ],
