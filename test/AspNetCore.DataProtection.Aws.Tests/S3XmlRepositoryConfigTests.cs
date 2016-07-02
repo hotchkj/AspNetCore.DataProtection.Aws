@@ -6,11 +6,11 @@ using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
-    public class S3RepositoryConfigTests
+    public class S3XmlRepositoryConfigTests
     {
         private readonly S3XmlRepositoryConfig config;
 
-        public S3RepositoryConfigTests()
+        public S3XmlRepositoryConfigTests()
         {
             config = new S3XmlRepositoryConfig("somebucket");
         }

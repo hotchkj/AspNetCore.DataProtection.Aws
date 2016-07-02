@@ -15,7 +15,7 @@ using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
-    public sealed class S3RespositoryTests : IDisposable
+    public sealed class S3XmlRespositoryTests : IDisposable
     {
         private readonly S3XmlRepository xmlRepository;
         private readonly MockRepository repository;
@@ -30,7 +30,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private const string AwsStandardMetadata = "x-amz-meta-";
         private const string FriendlyNameMetadata = AwsStandardMetadata + S3XmlRepository.FriendlyNameMetadata;
 
-        public S3RespositoryTests()
+        public S3XmlRespositoryTests()
         {
             repository = new MockRepository(MockBehavior.Strict);
             s3Client = repository.Create<IAmazonS3>();
