@@ -3,9 +3,9 @@
 using Amazon;
 using Amazon.S3;
 using AspNetCore.DataProtection.Aws.S3;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using Microsoft.AspNet.DataProtection.KeyManagement;
-using Microsoft.AspNet.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
@@ -39,11 +39,8 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             await s3cleanup.ClearKeys(S3IntegrationTests.BucketName, config.KeyPrefix);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddDataProtection();
-            serviceCollection.ConfigureDataProtection(configure =>
-            {
-                configure.PersistKeysToAwsS3(s3client, config);
-            });
+            serviceCollection.AddDataProtection()
+                             .PersistKeysToAwsS3(s3client, config);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IXmlRepository>(),
@@ -69,12 +66,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             await s3cleanup.ClearKeys(S3IntegrationTests.BucketName, config.KeyPrefix);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance(s3client);
-            serviceCollection.AddDataProtection();
-            serviceCollection.ConfigureDataProtection(configure =>
-            {
-                configure.PersistKeysToAwsS3(config);
-            });
+            serviceCollection.AddSingleton(s3client);
+            serviceCollection.AddDataProtection()
+                             .PersistKeysToAwsS3(config);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IXmlRepository>(),

@@ -4,7 +4,7 @@ using AspNetCore.DataProtection.Aws.S3;
 using System;
 using Xunit;
 
-namespace AspNetCore.DataProtection.Aws.IntegrationTests
+namespace AspNetCore.DataProtection.Aws.Tests
 {
     public class S3XmlRepositoryConfigTests
     {

@@ -5,9 +5,9 @@ using Amazon.KeyManagementService;
 using Amazon.S3;
 using AspNetCore.DataProtection.Aws.Kms;
 using AspNetCore.DataProtection.Aws.S3;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using Microsoft.AspNet.DataProtection.KeyManagement;
-using Microsoft.AspNet.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
@@ -45,12 +45,9 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             var kmsConfig = new KmsXmlEncryptorConfig(KmsIntegrationTests.ApplicationName, KmsIntegrationTests.KmsTestingKey);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddDataProtection();
-            serviceCollection.ConfigureDataProtection(configure =>
-            {
-                configure.PersistKeysToAwsS3(s3client, s3Config);
-                configure.ProtectKeysWithAwsKms(kmsClient, kmsConfig);
-            });
+            serviceCollection.AddDataProtection()
+                             .PersistKeysToAwsS3(s3client, s3Config)
+                             .ProtectKeysWithAwsKms(kmsClient, kmsConfig);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IXmlRepository>(),
@@ -77,14 +74,11 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             var kmsConfig = new KmsXmlEncryptorConfig(KmsIntegrationTests.ApplicationName, KmsIntegrationTests.KmsTestingKey);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance(s3client);
-            serviceCollection.AddInstance(kmsClient);
-            serviceCollection.AddDataProtection();
-            serviceCollection.ConfigureDataProtection(configure =>
-            {
-                configure.PersistKeysToAwsS3(s3Config);
-                configure.ProtectKeysWithAwsKms(kmsConfig);
-            });
+            serviceCollection.AddSingleton(s3client);
+            serviceCollection.AddSingleton(kmsClient);
+            serviceCollection.AddDataProtection()
+                             .PersistKeysToAwsS3(s3Config)
+                             .ProtectKeysWithAwsKms(kmsConfig);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IXmlRepository>(),

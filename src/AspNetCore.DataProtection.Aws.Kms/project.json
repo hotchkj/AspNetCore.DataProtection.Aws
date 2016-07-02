@@ -1,25 +1,30 @@
 {
-  "summary": "ASP.NET AWS KMS DataProtection Cryptography",
-  "description": "DataProtection encrypter & decrypter for use with AWS KMS (DNX RC1)",
-  "projectUrl": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws",
-  "licenseUrl": "https://opensource.org/licenses/MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws"
-  },
-  "owners": [ "hotchkj" ],
+  "description": "DataProtection encrypter & decrypter for use with AWS KMS",
+  "version": "1.0.0-beta01",
   "authors": [ "hotchkj" ],
-  "version": "1.0.0-alpha05",
+  "owners": [ "hotchkj" ],
 
-  "compilationOptions": {
+  "packOptions": {
+    "owners": [ "hotchkj" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws"
+    },
+    "summary": "ASP.NET AWS KMS DataProtection Cryptography",
+    "tags": [ "ASP.NET", "AWS", "DataProtection", "netcore" ],
+    "releaseNotes": "Updated to .NET Core",
+    "projectUrl": "https://github.com/hotchkj/AspNetCore.DataProtection.Aws",
+    "licenseUrl": "https://opensource.org/licenses/MIT"
+  },
+
+  "buildOptions": {
     "emitEntryPoint": false,
-    "warningsAsErrors": true,
-    "keyFile": "../../shared.snk"
+    "warningsAsErrors": true
   },
 
   "dependencies": {
-    "AWSSDK.KeyManagementService": "3.1.2.2",
-    "Microsoft.AspNet.DataProtection": "1.0.0-rc1-final"
+    "AWSSDK.KeyManagementService": "3.2.5-beta",
+    "Microsoft.AspNetCore.DataProtection": "1.0.0"
   },
 
   "frameworks": {
@@ -27,7 +32,11 @@
       "dependencies": {
       }
     },
-    "dnx451": {
+    "netcore50": {
+      "dependencies": {
+      }
+    },
+    "netstandard1.5": {
       "dependencies": {
       }
     }
