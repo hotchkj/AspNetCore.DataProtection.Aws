@@ -1,6 +1,6 @@
 {
   "description": "DataProtection encrypter & decrypter for use with AWS KMS",
-  "version": "1.0.0-beta01",
+  "version": "1.0.0-beta02",
   "authors": [ "hotchkj" ],
   "owners": [ "hotchkj" ],
 
@@ -19,11 +19,12 @@
 
   "buildOptions": {
     "emitEntryPoint": false,
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../shared.snk"
   },
 
   "dependencies": {
-    "AWSSDK.KeyManagementService": "3.2.5-beta",
+    "AWSSDK.KeyManagementService": "3.3.0.1",
     "Microsoft.AspNetCore.DataProtection": "1.0.0"
   },
 
@@ -36,7 +37,7 @@
       "dependencies": {
       }
     },
-    "netstandard1.5": {
+    "netstandard1.3": {
       "dependencies": {
       }
     }
