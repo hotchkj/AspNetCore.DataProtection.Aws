@@ -13,6 +13,9 @@ using System.Xml.Linq;
 
 namespace AspNetCore.DataProtection.Aws.Kms
 {
+    /// <summary>
+    /// An ASP.NET key decryptor using AWS KMS
+    /// </summary>
     public class KmsXmlDecryptor : IXmlDecryptor
     {
         private readonly ILogger logger;
@@ -25,7 +28,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// GetRequiredService<IXmlDecryptor>, instead calling the IServiceProvider constructor directly.
         /// This means we have to do the resolution of needed objects via IServiceProvider.
         /// </remarks>
-        /// <param name="services">A mandatory <see cref="IServiceProvider"/> to provide services.</param>
+        /// <param name="services">A mandatory <see cref="IServiceProvider"/> to provide services</param>
         public KmsXmlDecryptor(IServiceProvider services)
         {
             if (services == null)
@@ -40,17 +43,17 @@ namespace AspNetCore.DataProtection.Aws.Kms
         }
 
         /// <summary>
-        /// The configuration of how KMS will decrypt the XML data.
+        /// The configuration of how KMS will decrypt the XML data
         /// </summary>
         public IKmsXmlEncryptorConfig Config { get; }
 
         /// <summary>
-        /// The <see cref="IServiceProvider"/> provided to the constructor.
+        /// The <see cref="IServiceProvider"/> provided to the constructor
         /// </summary>
         protected IServiceProvider Services { get; }
 
         /// <summary>
-        /// The <see cref="IAmazonKeyManagementService"/> provided to the constructor.
+        /// The <see cref="IAmazonKeyManagementService"/> provided to the constructor
         /// </summary>
         protected IAmazonKeyManagementService KmsClient { get; }
 
@@ -79,7 +82,18 @@ namespace AspNetCore.DataProtection.Aws.Kms
                     CiphertextBlob = memoryStream
                 }, ct).ConfigureAwait(false);
 
-                return XElement.Load(response.Plaintext);
+                // Help indicates that Plaintext might be empty if the key couldn't be retrieved but
+                // testing shows that you always get an exception thrown first
+                using (var plaintext = response.Plaintext)
+                {
+                    // Ignoring all the good reasons mentioned in KmsXmlEncryptor and that the implementation would
+                    // be error-prone, hard to test & review, as well as vary between NET Full & NET Core, it's not
+                    // actually permitted to access the buffer of response.Plaintext because it was populated in
+                    // the SDK from a constructor which disallows any subsequent writing.
+                    //
+                    // Yet more reasons that this needs to be handled at a framework level, providing clear Secure* primitives.
+                    return XElement.Load(plaintext);
+                }
             }
         }
     }

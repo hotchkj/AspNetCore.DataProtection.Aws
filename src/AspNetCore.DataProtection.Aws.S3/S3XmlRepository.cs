@@ -110,7 +110,11 @@ namespace AspNetCore.DataProtection.Aws.S3
             }
             while (response.IsTruncated);
 
-            // TODO Could use ETag to cache and avoid S3 queries
+            // ASP.NET docs state:
+            //   When the data protection system initializes, it reads the key ring from the underlying repository and caches it in memory.
+            //   This cache allows Protect and Unprotect operations to proceed without hitting the backing store. The system will automatically
+            //   check the backing store for changes approximately every 24 hours or when the current default key expires, whichever comes first.
+            // So there should be no need to do any special ETag or other similar caching at this layer - key manager is already doing it.
 
             // Limit the number of concurrent requests to required value
             var throttler = new SemaphoreSlim(initialCount: Config.MaxS3QueryConcurrency);
@@ -153,7 +157,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                     {
                         return null;
                     }
-                    // Stream returned from AWS SDK does not automatically uncompress even with ContentEncoding set
+                    // Stream returned from AWS SDK does not automatically uncompress even with Content-Encoding set
                     // Not that surprising considering that S3 treats the data as just N bytes; that it was compressed
                     // client-side doesn't really matter.
                     //
@@ -202,6 +206,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                 StorageClass = Config.StorageClass
             };
             pr.Metadata.Add(FriendlyNameMetadata, friendlyName);
+            pr.Headers.ContentDisposition = "attachment; filename=" + friendlyName + ".xml";
 
             if (Config.ServerSideEncryptionMethod == ServerSideEncryptionMethod.AWSKMS)
             {
@@ -223,10 +228,9 @@ namespace AspNetCore.DataProtection.Aws.S3
                     // Note that this doesn't apply to the streams AWS SDK returns!
                     // Also provides a very convenient discriminator for whether the key is compressed
                     pr.Headers.ContentEncoding = "gzip";
-                    // Weird behaviour around GZipStream. Need to close, but then access the disposed MemoryStream!
                     using (var inputStream = new MemoryStream())
                     {
-                        using (var gZippedstream = new GZipStream(inputStream, CompressionMode.Compress))
+                        using (var gZippedstream = new GZipStream(inputStream, CompressionMode.Compress, true))
                         {
                             element.Save(gZippedstream);
                         }
@@ -240,8 +244,10 @@ namespace AspNetCore.DataProtection.Aws.S3
                 }
 
                 outputStream.Seek(0, SeekOrigin.Begin);
-                var hasher = MD5.Create();
-                pr.MD5Digest = Convert.ToBase64String(hasher.ComputeHash(outputStream));
+                using (var hasher = MD5.Create())
+                {
+                    pr.MD5Digest = Convert.ToBase64String(hasher.ComputeHash(outputStream));
+                }
 
                 outputStream.Seek(0, SeekOrigin.Begin);
                 pr.InputStream = outputStream;

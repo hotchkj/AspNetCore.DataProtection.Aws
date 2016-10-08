@@ -13,6 +13,9 @@ using System.Xml.Linq;
 
 namespace AspNetCore.DataProtection.Aws.Kms
 {
+    /// <summary>
+    /// An ASP.NET key encryptor using AWS KMS
+    /// </summary>
     public class KmsXmlEncryptor : IXmlEncryptor
     {
         private readonly ILogger logger;
@@ -20,8 +23,8 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <summary>
         /// Creates a <see cref="KmsXmlEncryptor"/> for encrypting ASP.NET keys with a KMS master key
         /// </summary>
-        /// <param name="kmsClient">The KMS client.</param>
-        /// <param name="config">The configuration object specifying which key data in KMS to use.</param>
+        /// <param name="kmsClient">The KMS client</param>
+        /// <param name="config">The configuration object specifying which key data in KMS to use</param>
         public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IKmsXmlEncryptorConfig config)
             : this(kmsClient, config, services: null)
         {
@@ -30,9 +33,9 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <summary>
         /// Creates a <see cref="KmsXmlEncryptor"/> for encrypting ASP.NET keys with a KMS master key
         /// </summary>
-        /// <param name="kmsClient">The KMS client.</param>
-        /// <param name="config">The configuration object specifying which key data in KMS to use.</param>
-        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
+        /// <param name="kmsClient">The KMS client</param>
+        /// <param name="config">The configuration object specifying which key data in KMS to use</param>
+        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services</param>
         public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IKmsXmlEncryptorConfig config, IServiceProvider services)
         {
             if (kmsClient == null)
@@ -52,17 +55,17 @@ namespace AspNetCore.DataProtection.Aws.Kms
         }
 
         /// <summary>
-        /// The configuration of how Kms will encrypt the XML data.
+        /// The configuration of how KMS will encrypt the XML data
         /// </summary>
         public IKmsXmlEncryptorConfig Config { get; }
 
         /// <summary>
-        /// The <see cref="IServiceProvider"/> provided to the constructor.
+        /// The <see cref="IServiceProvider"/> provided to the constructor
         /// </summary>
         protected IServiceProvider Services { get; }
 
         /// <summary>
-        /// The <see cref="IAmazonKeyManagementService"/> provided to the constructor.
+        /// The <see cref="IAmazonKeyManagementService"/> provided to the constructor
         /// </summary>
         protected IAmazonKeyManagementService KmsClient { get; }
 
@@ -79,18 +82,34 @@ namespace AspNetCore.DataProtection.Aws.Kms
         {
             logger?.LogDebug("Encrypting plaintext DataProtection key using AWS key {0}", Config.KeyId);
 
-            // Some implementations of this e.g. DpapiXmlEncryptor go to enormous lengths to
-            // create a memory stream, use unsafe code to zero it, and so on.
+            // Some implementations of this e.g. DpapiXmlEncryptor go to some lengths to create a memory
+            // stream, use unsafe code to pin & zero it, and so on.
             //
-            // Currently not doing so here, as this appears to neglect that the XElement above is in memory,
+            // Currently not doing any such zeroing here, as this neglects that the XElement above is in memory,
             // is a managed construct containing ultimately a System.String, and therefore the plaintext is
-            // most assuredly already in several places in memory. Even ignoring that, the following code
-            // sending a MemoryStream out over the web is likely about to buffer the plaintext in all sorts of ways.
+            // already at risk of compromise, copying during GC, paging to disk etc. If we'd been starting with SecureString,
+            // there'd be a good pre-existing case for handling the subsequent memory copies carefully (and it'd
+            // essentially be forced as you can't copy or stream a SecureString without unsafe code).
             //
-            // The primary objective of this encryption is to deny a reader of the _external storage_ access to the key.
+            // Even ignoring that, the subsequent code sending a MemoryStream out over the web to AWS calls ToArray inside
+            // the SDK and then stores the result as a System.String, twice, as part of outgoing JSON, and that's
+            // before considering HTTP-layer buffering...
             //
-            // If we'd been starting with SecureString, there'd be a good case for handling the memory carefully.
-            using (var memoryStream = new MemoryStream())
+            // Since the AWS code eventually just gets UTF8 byte[] for request content, the ideal would be that
+            // instead of a memory stream and a standard JSON handler, the AWS code prepares all the usual JSON and then
+            // gets a specific UTF8 byte[] entry of the base64 plaintext which a caller can pin and erase (and the SDK could
+            // do the same with its own request content byte[]).
+            //
+            // It doesn't.
+            //
+            // Even then the HttpClient usage would buffer the plaintext enroute.
+            //
+            // In conclusion pinning & zeroing this particular stream seems to be complex & error-prone overkill for
+            // handling data that is already exposed in memory - not that I wouldn't be thrilled to see
+            // a properly reviewed SecureMemoryStream and SecureHttpStreamContent in the framework...
+            //
+            // To at least reduce stream allocation churn & thus copying, pre-allocate a reasonable capacity.
+            using (var memoryStream = new MemoryStream(4096))
             {
                 plaintextElement.Save(memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
@@ -102,12 +121,15 @@ namespace AspNetCore.DataProtection.Aws.Kms
                     KeyId = Config.KeyId,
                     Plaintext = memoryStream
                 }, ct).ConfigureAwait(false);
+                
+                using (var cipherText = response.CiphertextBlob)
+                {
+                    var element = new XElement("encryptedKey",
+                        new XComment(" This key is encrypted with AWS Key Management Service. "),
+                        new XElement("value", Convert.ToBase64String(cipherText.ToArray())));
 
-                var element = new XElement("encryptedKey",
-                    new XComment(" This key is encrypted with AWS Key Management Service. "),
-                    new XElement("value", Convert.ToBase64String(response.CiphertextBlob.ToArray())));
-
-                return new EncryptedXmlInfo(element, typeof(KmsXmlDecryptor));
+                    return new EncryptedXmlInfo(element, typeof(KmsXmlDecryptor));
+                }
             }
         }
     }

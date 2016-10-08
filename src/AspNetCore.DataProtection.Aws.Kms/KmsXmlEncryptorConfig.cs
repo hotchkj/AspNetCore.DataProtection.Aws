@@ -4,10 +4,22 @@ using System.Collections.Generic;
 
 namespace AspNetCore.DataProtection.Aws.Kms
 {
+    /// <summary>
+    /// Enables configuration of KMS encryption options applied to the ASP.NET key material
+    /// </summary>
     public interface IKmsXmlEncryptorConfig
     {
+        /// <summary>
+        /// A set of encryption contexts passed to KMS during encryption & decryption
+        /// </summary>
         Dictionary<string, string> EncryptionContext { get; }
+        /// <summary>
+        /// Any KMS grant tokens needed for the encryption
+        /// </summary>
         List<string> GrantTokens { get; }
+        /// <summary>
+        /// The KMS key in whichever form is most suitable for the client's usage
+        /// </summary>
         string KeyId { get; }
     }
 
@@ -26,7 +38,6 @@ namespace AspNetCore.DataProtection.Aws.Kms
 
         public Dictionary<string, string> EncryptionContext { get; }
         public List<string> GrantTokens { get; }
-
         public string KeyId { get; }
     }
 }
