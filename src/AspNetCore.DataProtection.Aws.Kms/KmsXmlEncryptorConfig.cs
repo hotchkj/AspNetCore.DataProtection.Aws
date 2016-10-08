@@ -10,7 +10,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
     public interface IKmsXmlEncryptorConfig
     {
         /// <summary>
-        /// A set of encryption contexts passed to KMS during encryption & decryption
+        /// A set of encryption contexts passed to KMS during encryption &amp; decryption
         /// </summary>
         Dictionary<string, string> EncryptionContext { get; }
         /// <summary>

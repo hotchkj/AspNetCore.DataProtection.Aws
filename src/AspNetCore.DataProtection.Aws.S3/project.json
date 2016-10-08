@@ -1,6 +1,6 @@
 {
   "description": "DataProtection repository for use with AWS S3",
-  "version": "1.0.0-beta02",
+  "version": "1.0.0-beta03",
   "authors": [ "hotchkj" ],
 
   "packOptions": {
