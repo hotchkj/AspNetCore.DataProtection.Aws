@@ -11,15 +11,14 @@
     "AspNetCore.DataProtection.Aws.Kms": { "target": "project" },
     "AspNetCore.DataProtection.Aws.S3": { "target": "project" },
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "Microsoft.NETCore.Platforms": "1.1.0",
+    "Moq": "4.5.29",
     "xunit": "2.2.0-beta2-build3300"
   },
 
   "frameworks": {
     "net451": {
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1",
-        "Moq": "4.5.8",
-        "System.Threading.Tasks": "4.0.0.0"
       }
     }
   }
