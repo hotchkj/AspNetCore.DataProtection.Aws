@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>DataProtection encrypter &amp; decrypter for use with AWS KMS</Description>
+    <VersionPrefix>1.0.0-beta05</VersionPrefix>
+    <Authors>hotchkj</Authors>
+    <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>AspNetCore.DataProtection.Aws.Kms</AssemblyName>
+    <OutputType>Library</OutputType>
+    <AssemblyOriginatorKeyFile>../../shared.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PackageId>AspNetCore.DataProtection.Aws.Kms</PackageId>
+    <PackageTags>ASP.NET;AWS;DataProtection;netcore</PackageTags>
+    <PackageReleaseNotes>Updated to NET Core 1.1.1</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/hotchkj/AspNetCore.DataProtection.Aws</PackageProjectUrl>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/hotchkj/AspNetCore.DataProtection.Aws</RepositoryUrl>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.KeyManagementService" Version="3.3.2" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>
