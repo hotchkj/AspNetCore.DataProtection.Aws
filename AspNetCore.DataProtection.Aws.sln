@@ -1,27 +1,26 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{851F9F19-EAF9-4C8C-81CD-0C89D4083928}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{582AE13A-3A41-4FDE-9A8D-614A3D0F108E}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		README.md = README.md
 	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNetCore.DataProtection.Aws.S3", "src\AspNetCore.DataProtection.Aws.S3\AspNetCore.DataProtection.Aws.S3.xproj", "{A36A5D31-F6F5-4594-8326-1B5FF5877E8A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integrate", "integrate", "{344B8A2F-C439-4D64-904E-A8E6363D9FA9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{A790615F-8CB3-4A46-AB22-C20A6A26E797}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNetCore.DataProtection.Aws.IntegrationTests", "integrate\AspNetCore.DataProtection.Aws.IntegrationTests\AspNetCore.DataProtection.Aws.IntegrationTests.xproj", "{D19EBBF5-FA0E-4EC5-A11F-9B5AC1165B39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore.DataProtection.Aws.S3", "src\AspNetCore.DataProtection.Aws.S3\AspNetCore.DataProtection.Aws.S3.csproj", "{A36A5D31-F6F5-4594-8326-1B5FF5877E8A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNetCore.DataProtection.Aws.Tests", "test\AspNetCore.DataProtection.Aws.Tests\AspNetCore.DataProtection.Aws.Tests.xproj", "{37914C81-00E7-4FE5-887C-795E9DE81463}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore.DataProtection.Aws.IntegrationTests", "integrate\AspNetCore.DataProtection.Aws.IntegrationTests\AspNetCore.DataProtection.Aws.IntegrationTests.csproj", "{D19EBBF5-FA0E-4EC5-A11F-9B5AC1165B39}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNetCore.DataProtection.Aws.Kms", "src\AspNetCore.DataProtection.Aws.Kms\AspNetCore.DataProtection.Aws.Kms.xproj", "{405C524A-E843-43EB-8164-60976E3A4DF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore.DataProtection.Aws.Tests", "test\AspNetCore.DataProtection.Aws.Tests\AspNetCore.DataProtection.Aws.Tests.csproj", "{37914C81-00E7-4FE5-887C-795E9DE81463}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore.DataProtection.Aws.Kms", "src\AspNetCore.DataProtection.Aws.Kms\AspNetCore.DataProtection.Aws.Kms.csproj", "{405C524A-E843-43EB-8164-60976E3A4DF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
