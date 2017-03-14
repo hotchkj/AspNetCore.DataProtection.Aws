@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>DataProtection encrypter &amp; decrypter for use with AWS KMS</Description>
-    <VersionPrefix>1.0.0-beta05</VersionPrefix>
+    <VersionPrefix>1.0.0-beta06</VersionPrefix>
     <Authors>hotchkj</Authors>
     <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
