@@ -3,6 +3,7 @@ Amazon Web Services integration for ASP.NET Core data protection.
 Server keys can be stored in S3 and/or key material encrypted using KMS.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/5k00d5fdfspjv20e/branch/master?svg=true)](https://ci.appveyor.com/project/hotchkj/aspnetcore-dataprotection-aws/branch/master)
+[![Coverity status](https://scan.coverity.com/projects/9156/badge.svg)](https://scan.coverity.com/projects/hotchkj-aspnetcore-dataprotection-aws)
 
 ## S3 Persistence
 By default, ASP.NET Core Data Protection stores encryption keys locally, causing issues with key mismatches across server farms. S3 can be used instead of a shared filesystem to provide XML key file storage.

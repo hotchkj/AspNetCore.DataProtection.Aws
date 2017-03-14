@@ -117,16 +117,18 @@ namespace AspNetCore.DataProtection.Aws.S3
             // So there should be no need to do any special ETag or other similar caching at this layer - key manager is already doing it.
 
             // Limit the number of concurrent requests to required value
-            var throttler = new SemaphoreSlim(initialCount: Config.MaxS3QueryConcurrency);
-            var queries = new List<Task<XElement>>();
-            foreach (var item in items)
+            using (var throttler = new SemaphoreSlim(initialCount: Config.MaxS3QueryConcurrency))
             {
-                queries.Add(GetElementFromKey(item, throttler, ct));
+                var queries = new List<Task<XElement>>();
+                foreach (var item in items)
+                {
+                    queries.Add(GetElementFromKey(item, throttler, ct));
+                }
+
+                await Task.WhenAll(queries).ConfigureAwait(false);
+
+                return new ReadOnlyCollection<XElement>(queries.Select(x => x.Result).Where(x => x != null).ToList());
             }
-
-            await Task.WhenAll(queries).ConfigureAwait(false);
-
-            return new ReadOnlyCollection<XElement>(queries.Select(x => x.Result).Where(x => x != null).ToList());
         }
 
         private async Task<XElement> GetElementFromKey(S3Object item, SemaphoreSlim throttler, CancellationToken ct)
