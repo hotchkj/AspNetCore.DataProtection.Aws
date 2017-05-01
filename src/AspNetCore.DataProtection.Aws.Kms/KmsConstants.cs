@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2016 Jeff Hotchkiss
+﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 namespace AspNetCore.DataProtection.Aws.Kms
 {
@@ -16,8 +16,17 @@ namespace AspNetCore.DataProtection.Aws.Kms
     /// </remarks>
     public static class KmsConstants
     {
+        /// <summary>
+        /// KMS context key provided by default. Value is <see cref="DefaultEncryptionContextValue"/>.
+        /// </summary>
         public const string DefaultEncryptionContextKey = "AspNetCore.DataProtection.Aws.Kms.Xml";
+        /// <summary>
+        /// KMS context value provided by default. Key is <see cref="DefaultEncryptionContextValue"/>.
+        /// </summary>
         public const string DefaultEncryptionContextValue = "b7b7f5af-d3c3-436d-8792-87dfd65e1cd4";
+        /// <summary>
+        /// KMS context key used when setting application ID.
+        /// </summary>
         public const string ApplicationEncryptionContextKey = "AspNetCore.DataProtection.Aws.Kms.Xml.ApplicationName";
     }
 }

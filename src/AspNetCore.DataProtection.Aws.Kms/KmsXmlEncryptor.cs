@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2016 Jeff Hotchkiss
+﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
@@ -16,9 +16,10 @@ namespace AspNetCore.DataProtection.Aws.Kms
     /// <summary>
     /// An ASP.NET key encryptor using AWS KMS
     /// </summary>
-    public class KmsXmlEncryptor : IXmlEncryptor
+    public sealed class KmsXmlEncryptor : IXmlEncryptor
     {
         private readonly ILogger logger;
+        private readonly IAmazonKeyManagementService kmsClient;
 
         /// <summary>
         /// Creates a <see cref="KmsXmlEncryptor"/> for encrypting ASP.NET keys with a KMS master key
@@ -26,7 +27,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <param name="kmsClient">The KMS client</param>
         /// <param name="config">The configuration object specifying which key data in KMS to use</param>
         public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IKmsXmlEncryptorConfig config)
-            : this(kmsClient, config, services: null)
+            : this(kmsClient, config, null)
         {
         }
 
@@ -38,19 +39,8 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services</param>
         public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IKmsXmlEncryptorConfig config, IServiceProvider services)
         {
-            if (kmsClient == null)
-            {
-                throw new ArgumentNullException(nameof(kmsClient));
-            }
-
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
-
-            KmsClient = kmsClient;
-            Config = config;
-            Services = services;
+            this.kmsClient = kmsClient ?? throw new ArgumentNullException(nameof(kmsClient));
+            Config = config ?? throw new ArgumentNullException(nameof(config));
             logger = services?.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlEncryptor>();
         }
 
@@ -59,16 +49,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// </summary>
         public IKmsXmlEncryptorConfig Config { get; }
 
-        /// <summary>
-        /// The <see cref="IServiceProvider"/> provided to the constructor
-        /// </summary>
-        protected IServiceProvider Services { get; }
-
-        /// <summary>
-        /// The <see cref="IAmazonKeyManagementService"/> provided to the constructor
-        /// </summary>
-        protected IAmazonKeyManagementService KmsClient { get; }
-
+        /// <inheritdoc/>
         public EncryptedXmlInfo Encrypt(XElement plaintextElement)
         {
             // Due to time constraints, Microsoft didn't make the interfaces async
@@ -78,6 +59,12 @@ namespace AspNetCore.DataProtection.Aws.Kms
             return Task.Run(() => EncryptAsync(plaintextElement, CancellationToken.None)).Result;
         }
 
+        /// <summary>
+        /// Encrypts the provided XML element.
+        /// </summary>
+        /// <param name="plaintextElement">XML element to encrypt.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>Encrypted XML data.</returns>
         public async Task<EncryptedXmlInfo> EncryptAsync(XElement plaintextElement, CancellationToken ct)
         {
             logger?.LogDebug("Encrypting plaintext DataProtection key using AWS key {0}", Config.KeyId);
@@ -114,19 +101,21 @@ namespace AspNetCore.DataProtection.Aws.Kms
                 plaintextElement.Save(memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
-                var response = await KmsClient.EncryptAsync(new EncryptRequest
-                {
-                    EncryptionContext = Config.EncryptionContext,
-                    GrantTokens = Config.GrantTokens,
-                    KeyId = Config.KeyId,
-                    Plaintext = memoryStream
-                }, ct).ConfigureAwait(false);
-                
+                var response = await kmsClient.EncryptAsync(new EncryptRequest
+                                                            {
+                                                                EncryptionContext = Config.EncryptionContext,
+                                                                GrantTokens = Config.GrantTokens,
+                                                                KeyId = Config.KeyId,
+                                                                Plaintext = memoryStream
+                                                            },
+                                                            ct)
+                                              .ConfigureAwait(false);
+
                 using (var cipherText = response.CiphertextBlob)
                 {
                     var element = new XElement("encryptedKey",
-                        new XComment(" This key is encrypted with AWS Key Management Service. "),
-                        new XElement("value", Convert.ToBase64String(cipherText.ToArray())));
+                                               new XComment(" This key is encrypted with AWS Key Management Service. "),
+                                               new XElement("value", Convert.ToBase64String(cipherText.ToArray())));
 
                     return new EncryptedXmlInfo(element, typeof(KmsXmlDecryptor));
                 }

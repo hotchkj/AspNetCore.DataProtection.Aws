@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2016 Jeff Hotchkiss
+﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon.S3;
 using Amazon.S3.Model;
@@ -18,51 +18,52 @@ using System.IO.Compression;
 
 namespace AspNetCore.DataProtection.Aws.S3
 {
-    // <summary>
+    /// <summary>
     /// An XML repository backed by AWS S3.
     /// </summary>
-    public class S3XmlRepository : IXmlRepository
+    public sealed class S3XmlRepository : IXmlRepository
     {
         private readonly ILogger logger;
         private readonly IMockingWrapper mockWrapper;
+        private readonly IAmazonS3 s3Client;
+
+        /// <summary>
+        /// S3 metadata header for the friendly name of the stored XML element.
+        /// </summary>
         public const string FriendlyNameMetadata = "xml-friendly-name";
 
         /// <summary>
         /// Creates a <see cref="S3XmlRepository"/> with keys stored at the given bucket.
         /// </summary>
-        /// <param name="s3client">The S3 client.</param>
+        /// <param name="s3Client">The S3 client.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        public S3XmlRepository(IAmazonS3 s3client, IS3XmlRepositoryConfig config)
-            : this(s3client, config, services: null)
+        public S3XmlRepository(IAmazonS3 s3Client, IS3XmlRepositoryConfig config)
+            : this(s3Client, config, null)
         {
         }
 
         /// <summary>
-        /// Creates a <see cref="S3XmlRepository"/> with keys stored at the given bucket & optional key prefix.
+        /// Creates a <see cref="S3XmlRepository"/> with keys stored at the given bucket &amp; optional key prefix.
         /// </summary>
-        /// <param name="s3client">The S3 client.</param>
-		/// <param name="config">The configuration object specifying how to write to S3.</param>
+        /// <param name="s3Client">The S3 client.</param>
+        /// <param name="config">The configuration object specifying how to write to S3.</param>
         /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public S3XmlRepository(IAmazonS3 s3client, IS3XmlRepositoryConfig config, IServiceProvider services)
-            : this(s3client, config, services, new MockingWrapper())
+        public S3XmlRepository(IAmazonS3 s3Client, IS3XmlRepositoryConfig config, IServiceProvider services)
+            : this(s3Client, config, services, new MockingWrapper())
         {
         }
 
-        public S3XmlRepository(IAmazonS3 s3client, IS3XmlRepositoryConfig config, IServiceProvider services, IMockingWrapper mockWrapper)
+        /// <summary>
+        /// Creates a <see cref="S3XmlRepository"/> with keys stored at the given bucket &amp; optional key prefix.
+        /// </summary>
+        /// <param name="s3Client">The S3 client.</param>
+        /// <param name="config">The configuration object specifying how to write to S3.</param>
+        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
+        /// <param name="mockWrapper">Wrapper object to ensure unit testing is feasible.</param>
+        public S3XmlRepository(IAmazonS3 s3Client, IS3XmlRepositoryConfig config, IServiceProvider services, IMockingWrapper mockWrapper)
         {
-            if (s3client == null)
-            {
-                throw new ArgumentNullException(nameof(s3client));
-            }
-
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
-
-            S3Client = s3client;
-            Config = config;
-            Services = services;
+            this.s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
+            Config = config ?? throw new ArgumentNullException(nameof(config));
             logger = services?.GetService<ILoggerFactory>()?.CreateLogger<S3XmlRepository>();
             this.mockWrapper = mockWrapper;
         }
@@ -72,39 +73,35 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// </summary>
         public IS3XmlRepositoryConfig Config { get; }
 
-        /// <summary>
-        /// The <see cref="IServiceProvider"/> provided to the constructor.
-        /// </summary>
-        protected IServiceProvider Services { get; }
-
-        /// <summary>
-        /// The <see cref="IAmazonS3"/> provided to the constructor.
-        /// </summary>
-        protected IAmazonS3 S3Client { get; }
-
+        /// <inheritdoc/>
         public IReadOnlyCollection<XElement> GetAllElements()
         {
             // Due to time constraints, Microsoft didn't make the interfaces async
             // https://github.com/aspnet/DataProtection/issues/124
             // so loft the heavy lifting into a thread which enables safe async behaviour with some additional cost
             // Overhead should be acceptable since key management isn't a frequent thing
-            return Task.Run(()=> GetAllElementsAsync(CancellationToken.None)).Result;
+            return Task.Run(() => GetAllElementsAsync(CancellationToken.None)).Result;
         }
 
-        // Not part of the IXmlRepository interface
+        /// <summary>
+        /// Pulls out all stored XML elements from S3.
+        /// </summary>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>Collection of retrieved XML elements.</returns>
         public async Task<IReadOnlyCollection<XElement>> GetAllElementsAsync(CancellationToken ct)
         {
             var items = new List<S3Object>();
             ListObjectsV2Response response = null;
             do
             {
-                response = await S3Client.ListObjectsV2Async(new ListObjectsV2Request
-                {
-                    BucketName = Config.Bucket,
-                    Prefix = Config.KeyPrefix,
-                    ContinuationToken = response?.NextContinuationToken
-                },
-                ct).ConfigureAwait(false);
+                response = await s3Client.ListObjectsV2Async(new ListObjectsV2Request
+                                                             {
+                                                                 BucketName = Config.Bucket,
+                                                                 Prefix = Config.KeyPrefix,
+                                                                 ContinuationToken = response?.NextContinuationToken
+                                                             },
+                                                             ct)
+                                         .ConfigureAwait(false);
 
                 items.AddRange(response.S3Objects);
             }
@@ -117,7 +114,7 @@ namespace AspNetCore.DataProtection.Aws.S3
             // So there should be no need to do any special ETag or other similar caching at this layer - key manager is already doing it.
 
             // Limit the number of concurrent requests to required value
-            using (var throttler = new SemaphoreSlim(initialCount: Config.MaxS3QueryConcurrency))
+            using (var throttler = new SemaphoreSlim(Config.MaxS3QueryConcurrency))
             {
                 var queries = new List<Task<XElement>>();
                 foreach (var item in items)
@@ -149,13 +146,13 @@ namespace AspNetCore.DataProtection.Aws.S3
                 {
                     gr.ServerSideEncryptionCustomerMethod = Config.ServerSideEncryptionCustomerMethod;
                     gr.ServerSideEncryptionCustomerProvidedKey = Config.ServerSideEncryptionCustomerProvidedKey;
-                    gr.ServerSideEncryptionCustomerProvidedKeyMD5 = Config.ServerSideEncryptionCustomerProvidedKeyMD5;
+                    gr.ServerSideEncryptionCustomerProvidedKeyMD5 = Config.ServerSideEncryptionCustomerProvidedKeyMd5;
                 }
 
-                using (var response = await S3Client.GetObjectAsync(gr, ct).ConfigureAwait(false))
+                using (var response = await s3Client.GetObjectAsync(gr, ct).ConfigureAwait(false))
                 {
                     // Skip empty folder keys
-                    if(item.Key.EndsWith("/") && response.ContentLength == 0)
+                    if (item.Key.EndsWith("/") && response.ContentLength == 0)
                     {
                         return null;
                     }
@@ -185,15 +182,22 @@ namespace AspNetCore.DataProtection.Aws.S3
             }
         }
 
+        /// <inheritdoc/>
         public void StoreElement(XElement element, string friendlyName)
         {
             Task.Run(() => StoreElementAsync(element, friendlyName, CancellationToken.None)).Wait();
         }
 
-        // Not part of the IXmlRepository interface
+        /// <summary>
+        /// Stores the provided XML element into S3.
+        /// </summary>
+        /// <param name="element">XML to store.</param>
+        /// <param name="friendlyName">Friendly name of the XML (usually, ironically, a GUID).</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns></returns>
         public async Task StoreElementAsync(XElement element, string friendlyName, CancellationToken ct)
         {
-            string key = Config.KeyPrefix + mockWrapper.GetNewGuid() + ".xml";
+            var key = Config.KeyPrefix + mockWrapper.GetNewGuid() + ".xml";
             logger?.LogDebug("Storing DataProtection key at S3 location {0} in bucket {1}, friendly name of {2} as metadata", key, Config.Bucket, friendlyName);
 
             var pr = new PutObjectRequest
@@ -219,7 +223,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                 pr.ServerSideEncryptionMethod = ServerSideEncryptionMethod.None;
                 pr.ServerSideEncryptionCustomerMethod = Config.ServerSideEncryptionCustomerMethod;
                 pr.ServerSideEncryptionCustomerProvidedKey = Config.ServerSideEncryptionCustomerProvidedKey;
-                pr.ServerSideEncryptionCustomerProvidedKeyMD5 = Config.ServerSideEncryptionCustomerProvidedKeyMD5;
+                pr.ServerSideEncryptionCustomerProvidedKeyMD5 = Config.ServerSideEncryptionCustomerProvidedKeyMd5;
             }
 
             using (var outputStream = new MemoryStream())
@@ -236,7 +240,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                         {
                             element.Save(gZippedstream);
                         }
-                        var inputArray = inputStream.ToArray();
+                        byte[] inputArray = inputStream.ToArray();
                         await outputStream.WriteAsync(inputArray, 0, inputArray.Length, ct);
                     }
                 }
@@ -254,7 +258,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                 outputStream.Seek(0, SeekOrigin.Begin);
                 pr.InputStream = outputStream;
 
-                await S3Client.PutObjectAsync(pr, ct).ConfigureAwait(false);
+                await s3Client.PutObjectAsync(pr, ct).ConfigureAwait(false);
             }
         }
     }

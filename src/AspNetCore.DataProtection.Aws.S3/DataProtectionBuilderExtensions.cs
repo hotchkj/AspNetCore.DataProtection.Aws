@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2016 Jeff Hotchkiss
+﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using System;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,10 +16,10 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// <summary>
         /// Configures the data protection system to persist keys to a specified S3 bucket.
         /// </summary>
-        /// <param name="builder">The <see cref="DataProtectionConfiguration"/>.</param>
+        /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
         /// <param name="s3Client">S3 client configured with appropriate credentials.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        /// <returns>A reference to the <see cref="DataProtectionConfiguration" /> after this operation has completed.</returns>
+        /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
         public static IDataProtectionBuilder PersistKeysToAwsS3(this IDataProtectionBuilder builder, IAmazonS3 s3Client, S3XmlRepositoryConfig config)
         {
             if (builder == null)
@@ -45,9 +45,9 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// <summary>
         /// Configures the data protection system to persist keys to a specified S3 bucket.
         /// </summary>
-        /// <param name="builder">The <see cref="DataProtectionConfiguration"/>.</param>
+        /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        /// <returns>A reference to the <see cref="DataProtectionConfiguration" /> after this operation has completed.</returns>
+        /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
         public static IDataProtectionBuilder PersistKeysToAwsS3(this IDataProtectionBuilder builder, S3XmlRepositoryConfig config)
         {
             if (builder == null)
@@ -68,7 +68,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         private static void RemoveAllServicesOfType(IServiceCollection services, Type serviceType)
         {
             // We go backward since we're modifying the collection in-place.
-            for (int i = services.Count - 1; i >= 0; i--)
+            for (var i = services.Count - 1; i >= 0; i--)
             {
                 if (services[i]?.ServiceType == serviceType)
                 {

@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2016 Jeff Hotchkiss
+﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon;
 using Amazon.KeyManagementService;
@@ -18,7 +18,6 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private readonly KmsXmlEncryptor encryptor;
         private readonly KmsXmlDecryptor decryptor;
         private readonly IAmazonKeyManagementService kmsClient;
-        private readonly KmsXmlEncryptorConfig encryptConfig;
         internal const string ApplicationName = "hotchkj-test-app";
         private const string ElementName = "name";
         private const string ElementContent = "test";
@@ -29,7 +28,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             kmsClient = new AmazonKeyManagementServiceClient(RegionEndpoint.EUWest1);
-            encryptConfig = new KmsXmlEncryptorConfig(ApplicationName, KmsTestingKey);
+            var encryptConfig = new KmsXmlEncryptorConfig(ApplicationName, KmsTestingKey);
 
             var svcCollection = new ServiceCollection();
             svcCollection.AddSingleton<IKmsXmlEncryptorConfig>(sp => encryptConfig);

@@ -1,7 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0.
-//
-// Copied verbatim as a useful testing internal implementation detail
+﻿// Copyright(c) 2017 Jeff Hotchkiss
+// Licensed under the MIT License. See License.md in the project root for license information.
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using System;
 using System.Collections.Generic;
@@ -16,12 +14,12 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
     /// </summary>
     internal class EphemeralXmlRepository : IXmlRepository
     {
-        private readonly List<XElement> _storedElements = new List<XElement>();
+        private readonly List<XElement> storedElements = new List<XElement>();
 
         public virtual IReadOnlyCollection<XElement> GetAllElements()
         {
             // force complete enumeration under lock for thread safety
-            lock (_storedElements)
+            lock (storedElements)
             {
                 return GetAllElementsCore().ToList().AsReadOnly();
             }
@@ -30,7 +28,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private IEnumerable<XElement> GetAllElementsCore()
         {
             // this method must be called under lock
-            foreach (XElement element in _storedElements)
+            foreach (var element in storedElements)
             {
                 yield return new XElement(element); // makes a deep copy so caller doesn't inadvertently modify it
             }
@@ -43,12 +41,12 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                 throw new ArgumentNullException(nameof(element));
             }
 
-            XElement cloned = new XElement(element); // makes a deep copy so caller doesn't inadvertently modify it
+            var cloned = new XElement(element); // makes a deep copy so caller doesn't inadvertently modify it
 
             // under lock for thread safety
-            lock (_storedElements)
+            lock (storedElements)
             {
-                _storedElements.Add(cloned);
+                storedElements.Add(cloned);
             }
         }
     }
