@@ -237,3 +237,9 @@ _Pvt_Extensions
 
 # Coverity
 cov-int/
+
+# SonarQube
+.sonarqube
+
+# Cake
+tools/
