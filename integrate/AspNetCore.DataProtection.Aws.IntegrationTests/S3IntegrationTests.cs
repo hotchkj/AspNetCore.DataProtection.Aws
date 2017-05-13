@@ -1,9 +1,10 @@
-﻿// Copyright(c) 2016 Jeff Hotchkiss
+﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon;
 using Amazon.S3;
 using AspNetCore.DataProtection.Aws.S3;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,8 +15,8 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
     public sealed class S3IntegrationTests : IDisposable
     {
-        private readonly IAmazonS3 s3client;
-        private readonly ICleanupS3 s3cleanup;
+        private readonly IAmazonS3 s3Client;
+        private readonly ICleanupS3 s3Cleanup;
         private readonly S3XmlRepository xmlRepo;
         private readonly S3XmlRepositoryConfig config;
         // Usual max keys in S3 queries is 1000, so this should ensure we have several re-queries
@@ -28,17 +29,16 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         public S3IntegrationTests()
         {
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
-            s3client = new AmazonS3Client(RegionEndpoint.EUWest1);
-            config = new S3XmlRepositoryConfig(BucketName);
+            s3Client = new AmazonS3Client(RegionEndpoint.EUWest1);
             // Override the default for ease of debugging. Explicitly turn on for compression tests.
-            config.ClientSideCompression = false;
-            xmlRepo = new S3XmlRepository(s3client, config);
-            s3cleanup = new CleanupS3(s3client);
+            config = new S3XmlRepositoryConfig(BucketName) { ClientSideCompression = false };
+            xmlRepo = new S3XmlRepository(s3Client, config);
+            s3Cleanup = new CleanupS3(s3Client);
         }
 
         public void Dispose()
         {
-            s3client.Dispose();
+            s3Client.Dispose();
         }
 
         public async Task PrepareLargeQueryTest()
@@ -47,7 +47,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             var myXml = new XElement(ElementName, ElementContent);
 
-            for (int i = 0; i < LargeTestNumber; ++i)
+            for (var i = 0; i < LargeTestNumber; ++i)
             {
                 await xmlRepo.StoreElementAsync(myXml, "LargeQueryTest" + i, CancellationToken.None);
             }
@@ -57,14 +57,14 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         public async Task ExpectDefaultStoreRetrieveToSucceed()
         {
             config.KeyPrefix = "DefaultTesting/";
-            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
+            await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly";
 
             await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
 
-            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
             Assert.Equal(1, list.Count);
             Assert.True(XNode.DeepEquals(myXml, list.First()));
@@ -75,14 +75,14 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             config.KeyPrefix = "CompressTesting/";
             config.ClientSideCompression = true;
-            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
+            await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly_compressed";
 
             await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
 
-            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
             Assert.Equal(1, list.Count);
             Assert.True(XNode.DeepEquals(myXml, list.First()));
@@ -93,7 +93,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             config.KeyPrefix = "ForwardsCompatibilityCompressTesting/";
             config.ClientSideCompression = false;
-            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
+            await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly_not_so_compressed";
@@ -102,7 +102,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             config.ClientSideCompression = true;
 
-            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
             Assert.Equal(1, list.Count);
             Assert.True(XNode.DeepEquals(myXml, list.First()));
@@ -113,7 +113,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             config.KeyPrefix = "BackwardsCompatibilityCompressTesting/";
             config.ClientSideCompression = true;
-            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
+            await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly_compressed";
@@ -122,7 +122,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             config.ClientSideCompression = false;
 
-            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
             Assert.Equal(1, list.Count);
             Assert.True(XNode.DeepEquals(myXml, list.First()));
@@ -134,14 +134,14 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.KeyPrefix = "KmsTesting/";
             config.ServerSideEncryptionKeyManagementServiceKeyId = "alias/KmsIntegrationTesting";
             config.ServerSideEncryptionMethod = ServerSideEncryptionMethod.AWSKMS;
-            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
+            await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly";
 
             await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
 
-            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
             Assert.Equal(1, list.Count);
             Assert.True(XNode.DeepEquals(myXml, list.First()));
@@ -153,14 +153,14 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             config.KeyPrefix = "CustomKeyTesting/";
             config.ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256;
             config.ServerSideEncryptionCustomerProvidedKey = "x+AmYqxeD//Ky4vt0HmXxSVGll7TgEkJK6iTPGqFJbk=";
-            await s3cleanup.ClearKeys(BucketName, config.KeyPrefix);
+            await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);
             var myTestName = "friendly";
 
             await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
 
-            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
             Assert.Equal(1, list.Count);
             Assert.True(XNode.DeepEquals(myXml, list.First()));
@@ -171,7 +171,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             config.KeyPrefix = "DoesntExist/";
 
-            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
             Assert.Equal(0, list.Count);
         }
@@ -181,7 +181,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             config.KeyPrefix = "NothingHere/";
 
-            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
             Assert.Equal(0, list.Count);
         }
@@ -191,7 +191,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         {
             config.KeyPrefix = "LargeQueryTest/";
 
-            var list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
 
             var expected = new XElement(ElementName, ElementContent);
             Assert.Equal(LargeTestNumber, list.Count);

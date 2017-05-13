@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2016 Jeff Hotchkiss
+﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
@@ -16,29 +16,24 @@ namespace AspNetCore.DataProtection.Aws.Kms
     /// <summary>
     /// An ASP.NET key decryptor using AWS KMS
     /// </summary>
-    public class KmsXmlDecryptor : IXmlDecryptor
+    public sealed class KmsXmlDecryptor : IXmlDecryptor
     {
         private readonly ILogger logger;
+        private readonly IAmazonKeyManagementService kmsClient;
 
         /// <summary>
         /// Creates a <see cref="KmsXmlDecryptor"/> for decrypting ASP.NET keys with a KMS master key
         /// </summary>
         /// <remarks>
         /// DataProtection has a fairly awful way of making the IXmlDecryptor that by default never just does
-        /// GetRequiredService<IXmlDecryptor>, instead calling the IServiceProvider constructor directly.
+        /// <see cref="IServiceProvider.GetService"/>, instead calling the IServiceProvider constructor directly.
         /// This means we have to do the resolution of needed objects via IServiceProvider.
         /// </remarks>
         /// <param name="services">A mandatory <see cref="IServiceProvider"/> to provide services</param>
         public KmsXmlDecryptor(IServiceProvider services)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            KmsClient = services.GetRequiredService<IAmazonKeyManagementService>();
+            kmsClient = services?.GetRequiredService<IAmazonKeyManagementService>() ?? throw new ArgumentNullException(nameof(services));
             Config = services.GetRequiredService<IKmsXmlEncryptorConfig>();
-            Services = services;
             logger = services.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlDecryptor>();
         }
 
@@ -47,16 +42,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// </summary>
         public IKmsXmlEncryptorConfig Config { get; }
 
-        /// <summary>
-        /// The <see cref="IServiceProvider"/> provided to the constructor
-        /// </summary>
-        protected IServiceProvider Services { get; }
-
-        /// <summary>
-        /// The <see cref="IAmazonKeyManagementService"/> provided to the constructor
-        /// </summary>
-        protected IAmazonKeyManagementService KmsClient { get; }
-
+        /// <inheritdoc/>
         public XElement Decrypt(XElement encryptedElement)
         {
             // Due to time constraints, Microsoft didn't make the interfaces async
@@ -66,21 +52,29 @@ namespace AspNetCore.DataProtection.Aws.Kms
             return Task.Run(() => DecryptAsync(encryptedElement, CancellationToken.None)).Result;
         }
 
+        /// <summary>
+        /// Decrypts a provided XML element.
+        /// </summary>
+        /// <param name="encryptedElement">Encrypted XML element.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>Decrypted XML element.</returns>
         public async Task<XElement> DecryptAsync(XElement encryptedElement, CancellationToken ct)
         {
             logger?.LogDebug("Decrypting ciphertext DataProtection key using AWS key {0}", Config.KeyId);
 
             using (var memoryStream = new MemoryStream())
             {
-                var protectedKey = Convert.FromBase64String((string)encryptedElement.Element("value"));
-                await memoryStream.WriteAsync(protectedKey, 0, protectedKey.Length);
+                byte[] protectedKey = Convert.FromBase64String((string)encryptedElement.Element("value"));
+                await memoryStream.WriteAsync(protectedKey, 0, protectedKey.Length, ct);
 
-                var response = await KmsClient.DecryptAsync(new DecryptRequest
-                {
-                    EncryptionContext = Config.EncryptionContext,
-                    GrantTokens = Config.GrantTokens,
-                    CiphertextBlob = memoryStream
-                }, ct).ConfigureAwait(false);
+                var response = await kmsClient.DecryptAsync(new DecryptRequest
+                                                            {
+                                                                EncryptionContext = Config.EncryptionContext,
+                                                                GrantTokens = Config.GrantTokens,
+                                                                CiphertextBlob = memoryStream
+                                                            },
+                                                            ct)
+                                              .ConfigureAwait(false);
 
                 // Help indicates that Plaintext might be empty if the key couldn't be retrieved but
                 // testing shows that you always get an exception thrown first
