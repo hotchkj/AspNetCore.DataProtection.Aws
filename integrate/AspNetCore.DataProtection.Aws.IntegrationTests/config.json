@@ -1,0 +1,23 @@
+{
+  "s3XmlStorageFull": {
+    "bucket": "1234",
+    "keyPrefix": "key",
+    "serverSideEncryptionMethod": "AWSKMS",
+    "serverSideEncryptionCustomerMethod": "AES256",
+    "serverSideEncryptionCustomerProvidedKey": "provKey",
+    "serverSideEncryptionCustomerProvidedKeyMd5": "provKeyMd5",
+    "serverSideEncryptionKeyManagementServiceKeyId": "servKeyId",
+    "storageClass": "Glacier",
+    "clientSideCompression": false,
+    "maxS3QueryConcurrency": 7
+  },
+  "kmsXmlEncrytionFull": {
+    "keyId": "key",
+    "encryptionContext": {
+      "someContext": "someContextValue"
+    },
+    "grantTokens": [
+      "someToken"
+    ]
+  } 
+}

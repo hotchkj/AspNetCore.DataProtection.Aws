@@ -1,14 +1,16 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
-using Amazon;
-using Amazon.KeyManagementService;
-using Amazon.KeyManagementService.Model;
-using AspNetCore.DataProtection.Aws.Kms;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Amazon;
+using Amazon.KeyManagementService;
+using Amazon.KeyManagementService.Model;
+using AspNetCore.DataProtection.Aws.Kms;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
@@ -18,24 +20,30 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         private readonly KmsXmlEncryptor encryptor;
         private readonly KmsXmlDecryptor decryptor;
         private readonly IAmazonKeyManagementService kmsClient;
+        private readonly IServiceProvider svcProvider;
         internal const string ApplicationName = "hotchkj-test-app";
         private const string ElementName = "name";
         private const string ElementContent = "test";
         // Expectation that whatever key is in use has this alias
         internal const string KmsTestingKey = "alias/KmsIntegrationTesting";
+        private readonly DataProtectionOptions dpOptions;
 
         public KmsIntegrationTests()
         {
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             kmsClient = new AmazonKeyManagementServiceClient(RegionEndpoint.EUWest1);
-            var encryptConfig = new KmsXmlEncryptorConfig(ApplicationName, KmsTestingKey);
+            var encryptConfig = new KmsXmlEncryptorConfig(KmsTestingKey);
+            dpOptions = new DataProtectionOptions { ApplicationDiscriminator = ApplicationName };
+            var encryptSnapshot = new DirectOptionsSnapshot<KmsXmlEncryptorConfig>(encryptConfig);
+            var dpSnapshot = new DirectOptionsSnapshot<DataProtectionOptions>(dpOptions);
 
             var svcCollection = new ServiceCollection();
-            svcCollection.AddSingleton<IKmsXmlEncryptorConfig>(sp => encryptConfig);
+            svcCollection.AddSingleton<IOptionsSnapshot<KmsXmlEncryptorConfig>>(sp => encryptSnapshot);
+            svcCollection.AddSingleton<IOptionsSnapshot<DataProtectionOptions>>(sp => dpSnapshot);
             svcCollection.AddSingleton(sp => kmsClient);
-            var svcProvider = svcCollection.BuildServiceProvider();
+            svcProvider = svcCollection.BuildServiceProvider();
 
-            encryptor = new KmsXmlEncryptor(kmsClient, encryptConfig, svcProvider);
+            encryptor = new KmsXmlEncryptor(kmsClient, encryptSnapshot, dpSnapshot);
 
             decryptor = new KmsXmlDecryptor(svcProvider);
         }
@@ -43,6 +51,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         public void Dispose()
         {
             kmsClient.Dispose();
+            (svcProvider as IDisposable)?.Dispose();
         }
 
         [Fact]
@@ -64,7 +73,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
 
             var encrypted = await encryptor.EncryptAsync(myXml, CancellationToken.None);
 
-            decryptor.Config.EncryptionContext[KmsConstants.ApplicationEncryptionContextKey] = "wrong";
+            dpOptions.ApplicationDiscriminator = "wrong";
             await Assert.ThrowsAsync<InvalidCiphertextException>(async () => await decryptor.DecryptAsync(encrypted.EncryptedElement, CancellationToken.None));
         }
     }

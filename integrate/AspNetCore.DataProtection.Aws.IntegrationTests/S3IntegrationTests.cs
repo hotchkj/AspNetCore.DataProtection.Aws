@@ -1,14 +1,14 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
-using Amazon;
-using Amazon.S3;
-using AspNetCore.DataProtection.Aws.S3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Amazon;
+using Amazon.S3;
+using AspNetCore.DataProtection.Aws.S3;
 using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
@@ -32,7 +32,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             s3Client = new AmazonS3Client(RegionEndpoint.EUWest1);
             // Override the default for ease of debugging. Explicitly turn on for compression tests.
             config = new S3XmlRepositoryConfig(BucketName) { ClientSideCompression = false };
-            xmlRepo = new S3XmlRepository(s3Client, config);
+            xmlRepo = new S3XmlRepository(s3Client, new DirectOptionsSnapshot<S3XmlRepositoryConfig>(config));
             s3Cleanup = new CleanupS3(s3Client);
         }
 

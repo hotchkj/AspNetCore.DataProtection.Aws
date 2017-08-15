@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 using System;
 
-namespace AspNetCore.DataProtection.Aws.S3
+namespace AspNetCore.DataProtection.Aws.S3.Internals
 {
     /// <summary>
     /// Provides mockable interfaces for NET Framework entries.

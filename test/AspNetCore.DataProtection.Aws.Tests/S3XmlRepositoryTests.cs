@@ -1,9 +1,5 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
-using Amazon.S3;
-using Amazon.S3.Model;
-using AspNetCore.DataProtection.Aws.S3;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +7,12 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Xml.Linq;
+using Amazon.S3;
+using Amazon.S3.Model;
+using AspNetCore.DataProtection.Aws.S3;
+using AspNetCore.DataProtection.Aws.S3.Internals;
+using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.Tests
@@ -20,7 +22,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
         private readonly S3XmlRepository xmlRepository;
         private readonly MockRepository repository;
         private readonly Mock<IAmazonS3> s3Client;
-        private readonly Mock<IS3XmlRepositoryConfig> config;
+        private readonly Mock<IOptionsSnapshot<S3XmlRepositoryConfig>> config;
         private readonly Mock<IMockingWrapper> mockingWrapper;
         private const string ElementName = "name";
         private const string ElementContent = "test";
@@ -34,7 +36,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
         {
             repository = new MockRepository(MockBehavior.Strict);
             s3Client = repository.Create<IAmazonS3>();
-            config = repository.Create<IS3XmlRepositoryConfig>();
+            config = repository.Create<IOptionsSnapshot<S3XmlRepositoryConfig>>();
             mockingWrapper = repository.Create<IMockingWrapper>();
             xmlRepository = new S3XmlRepository(s3Client.Object, config.Object, null, mockingWrapper.Object);
         }
@@ -47,9 +49,15 @@ namespace AspNetCore.DataProtection.Aws.Tests
         [Fact]
         public void ExpectAlternativeConstructor()
         {
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket
+            };
+            config.Setup(x => x.Value).Returns(configObject);
+
             var altRepo = new S3XmlRepository(s3Client.Object, config.Object);
 
-            Assert.Same(config.Object, altRepo.Config);
+            Assert.Same(configObject, altRepo.Config);
         }
 
         [Fact]
@@ -61,12 +69,14 @@ namespace AspNetCore.DataProtection.Aws.Tests
             // Response isn't queried, so can be default arguments
             var response = new PutObjectResponse();
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.StorageClass).Returns(S3StorageClass.Standard);
-            config.Setup(x => x.ServerSideEncryptionMethod).Returns(ServerSideEncryptionMethod.AES256);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
-            config.Setup(x => x.ClientSideCompression).Returns(false);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix,
+                ClientSideCompression = false
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
             mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
@@ -103,12 +113,16 @@ namespace AspNetCore.DataProtection.Aws.Tests
             // Response isn't queried, so can be default arguments
             var response = new PutObjectResponse();
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.StorageClass).Returns(S3StorageClass.Standard);
-            config.Setup(x => x.ServerSideEncryptionMethod).Returns(ServerSideEncryptionMethod.AWSKMS);
-            config.Setup(x => x.ServerSideEncryptionKeyManagementServiceKeyId).Returns(keyId);
-            config.Setup(x => x.ClientSideCompression).Returns(false);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix,
+                ServerSideEncryptionMethod = ServerSideEncryptionMethod.AWSKMS,
+                ServerSideEncryptionKeyManagementServiceKeyId = keyId,
+                ClientSideCompression = false
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
             mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
@@ -145,14 +159,18 @@ namespace AspNetCore.DataProtection.Aws.Tests
             // Response isn't queried, so can be default arguments
             var response = new PutObjectResponse();
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.StorageClass).Returns(S3StorageClass.Standard);
-            config.Setup(x => x.ServerSideEncryptionMethod).Returns(ServerSideEncryptionMethod.None);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.AES256);
-            config.Setup(x => x.ServerSideEncryptionCustomerProvidedKey).Returns(AesKey);
-            config.Setup(x => x.ServerSideEncryptionCustomerProvidedKeyMd5).Returns(md5);
-            config.Setup(x => x.ClientSideCompression).Returns(false);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix,
+                ServerSideEncryptionMethod = ServerSideEncryptionMethod.None,
+                ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256,
+                ServerSideEncryptionCustomerProvidedKey = AesKey,
+                ServerSideEncryptionCustomerProvidedKeyMd5 = md5,
+                ClientSideCompression = false
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
             mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
@@ -188,12 +206,15 @@ namespace AspNetCore.DataProtection.Aws.Tests
             // Response isn't queried, so can be default arguments
             var response = new PutObjectResponse();
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.StorageClass).Returns(S3StorageClass.ReducedRedundancy);
-            config.Setup(x => x.ServerSideEncryptionMethod).Returns(ServerSideEncryptionMethod.AES256);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
-            config.Setup(x => x.ClientSideCompression).Returns(false);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix,
+                StorageClass = S3StorageClass.ReducedRedundancy,
+                ClientSideCompression = false
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
             mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
@@ -229,12 +250,13 @@ namespace AspNetCore.DataProtection.Aws.Tests
             // Response isn't queried, so can be default arguments
             var response = new PutObjectResponse();
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.StorageClass).Returns(S3StorageClass.Standard);
-            config.Setup(x => x.ServerSideEncryptionMethod).Returns(ServerSideEncryptionMethod.AES256);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
-            config.Setup(x => x.ClientSideCompression).Returns(true);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             var guid = new Guid("03ffb238-1f6b-4647-963a-5ed60e83c74e");
             mockingWrapper.Setup(x => x.GetNewGuid()).Returns(guid);
@@ -271,9 +293,13 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 Prefix = Prefix
             };
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
                     .ReturnsAsync(listResponse)
@@ -310,10 +336,13 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 IsTruncated = false
             };
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
                     .ReturnsAsync(listResponse)
@@ -377,10 +406,13 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 IsTruncated = false
             };
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
                     .ReturnsAsync(listResponse)
@@ -442,10 +474,13 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 IsTruncated = false
             };
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
                     .ReturnsAsync(listResponse)
@@ -510,10 +545,13 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 IsTruncated = false
             };
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
                     .ReturnsAsync(listResponse)
@@ -587,12 +625,16 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 IsTruncated = false
             };
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.AES256);
-            config.Setup(x => x.ServerSideEncryptionCustomerProvidedKey).Returns(AesKey);
-            config.Setup(x => x.ServerSideEncryptionCustomerProvidedKeyMd5).Returns(md5);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix,
+                ServerSideEncryptionCustomerMethod = ServerSideEncryptionCustomerMethod.AES256,
+                ServerSideEncryptionCustomerProvidedKey = AesKey,
+                ServerSideEncryptionCustomerProvidedKeyMd5 = md5
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.IsAny<ListObjectsV2Request>(), CancellationToken.None))
                     .ReturnsAsync(listResponse)
@@ -674,10 +716,13 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 IsTruncated = false
             };
 
-            config.Setup(x => x.Bucket).Returns(Bucket);
-            config.Setup(x => x.KeyPrefix).Returns(Prefix);
-            config.Setup(x => x.MaxS3QueryConcurrency).Returns(10);
-            config.Setup(x => x.ServerSideEncryptionCustomerMethod).Returns(ServerSideEncryptionCustomerMethod.None);
+            var configObject = new S3XmlRepositoryConfig
+            {
+                Bucket = Bucket,
+                KeyPrefix = Prefix
+            };
+
+            config.Setup(x => x.Value).Returns(configObject);
 
             s3Client.Setup(x => x.ListObjectsV2Async(It.Is<ListObjectsV2Request>(lr => lr.ContinuationToken == null), CancellationToken.None))
                     .ReturnsAsync(listResponse1)

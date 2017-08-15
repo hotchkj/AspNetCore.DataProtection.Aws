@@ -1,18 +1,20 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
-using Amazon.KeyManagementService;
-using Amazon.KeyManagementService.Model;
-using Microsoft.AspNetCore.DataProtection.XmlEncryption;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Amazon.KeyManagementService;
+using Amazon.KeyManagementService.Model;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AspNetCore.DataProtection.Aws.Kms
 {
+    // ReSharper disable once InheritdocConsiderUsage
     /// <summary>
     /// An ASP.NET key encryptor using AWS KMS
     /// </summary>
@@ -20,14 +22,18 @@ namespace AspNetCore.DataProtection.Aws.Kms
     {
         private readonly ILogger logger;
         private readonly IAmazonKeyManagementService kmsClient;
+        private readonly IOptionsSnapshot<KmsXmlEncryptorConfig> config;
+        private readonly IOptionsSnapshot<DataProtectionOptions> dpOptions;
 
+        // ReSharper disable once InheritdocConsiderUsage
         /// <summary>
         /// Creates a <see cref="KmsXmlEncryptor"/> for encrypting ASP.NET keys with a KMS master key
         /// </summary>
         /// <param name="kmsClient">The KMS client</param>
         /// <param name="config">The configuration object specifying which key data in KMS to use</param>
-        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IKmsXmlEncryptorConfig config)
-            : this(kmsClient, config, null)
+        /// <param name="dpOptions">Main data protection options</param>
+        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IOptionsSnapshot<KmsXmlEncryptorConfig> config, IOptionsSnapshot<DataProtectionOptions> dpOptions)
+            : this(kmsClient, config, dpOptions, null)
         {
         }
 
@@ -36,18 +42,37 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// </summary>
         /// <param name="kmsClient">The KMS client</param>
         /// <param name="config">The configuration object specifying which key data in KMS to use</param>
-        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services</param>
-        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IKmsXmlEncryptorConfig config, IServiceProvider services)
+        /// <param name="dpOptions">Main data protection options</param>
+        /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to provide logging infrastructure.</param>
+        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient,
+                               IOptionsSnapshot<KmsXmlEncryptorConfig> config,
+                               IOptionsSnapshot<DataProtectionOptions> dpOptions,
+                               ILoggerFactory loggerFactory)
         {
             this.kmsClient = kmsClient ?? throw new ArgumentNullException(nameof(kmsClient));
-            Config = config ?? throw new ArgumentNullException(nameof(config));
-            logger = services?.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlEncryptor>();
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
+            this.dpOptions = dpOptions ?? throw new ArgumentNullException(nameof(dpOptions));
+            logger = loggerFactory?.CreateLogger<KmsXmlEncryptor>();
         }
 
         /// <summary>
         /// The configuration of how KMS will encrypt the XML data
         /// </summary>
-        public IKmsXmlEncryptorConfig Config { get; }
+        public IKmsXmlEncryptorConfig Config
+        {
+            get
+            {
+                var retVal = config.Value;
+
+                // Microsoft haven't provided for any validation of options as yet, so what was originally a constructor argument must now be validated by hand at runtime (yuck)
+                if (string.IsNullOrWhiteSpace(retVal.KeyId))
+                {
+                    throw new ArgumentException("A key id is required for KMS operation", nameof(retVal.KeyId));
+                }
+
+                return retVal;
+            }
+        }
 
         /// <inheritdoc/>
         public EncryptedXmlInfo Encrypt(XElement plaintextElement)
@@ -103,7 +128,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
 
                 var response = await kmsClient.EncryptAsync(new EncryptRequest
                                                             {
-                                                                EncryptionContext = Config.EncryptionContext,
+                                                                EncryptionContext = ContextUpdater.GetEncryptionContext(Config, dpOptions.Value),
                                                                 GrantTokens = Config.GrantTokens,
                                                                 KeyId = Config.KeyId,
                                                                 Plaintext = memoryStream
