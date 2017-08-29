@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>DataProtection repository for use with AWS S3</Description>
-    <VersionPrefix>1.0.0-beta07</VersionPrefix>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>hotchkj</Authors>
     <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -13,7 +13,7 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>AspNetCore.DataProtection.Aws.S3</PackageId>
     <PackageTags>ASP.NET;AWS;DataProtection;netcore</PackageTags>
-    <PackageReleaseNotes>Updated to DataProtection 1.1.2, added XML intellisense</PackageReleaseNotes>
+    <PackageReleaseNotes>Released version compatible only with ASP.NET Core 1.X</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/hotchkj/AspNetCore.DataProtection.Aws</PackageProjectUrl>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
