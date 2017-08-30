@@ -1,8 +1,8 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
+using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
-using System.Threading.Tasks;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {

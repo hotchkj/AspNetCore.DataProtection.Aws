@@ -1,8 +1,8 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
-using Amazon.S3;
 using System;
 using System.Linq;
+using Amazon.S3;
 
 namespace AspNetCore.DataProtection.Aws.S3
 {
@@ -74,13 +74,46 @@ namespace AspNetCore.DataProtection.Aws.S3
     public class S3XmlRepositoryConfig : IS3XmlRepositoryConfig
     {
         /// <summary>
+        /// Constructs S3 XML repository configuration. Bucket name <b>must</b> be configured e.g. via options binding.
+        /// </summary>
+        /// <remarks>
+        /// See <see cref="CopyFrom"/> as to why this is needed.
+        /// </remarks>
+        public S3XmlRepositoryConfig()
+        {
+            SetToDefaults();
+        }
+
+        // ReSharper disable once InheritdocConsiderUsage
+        /// <summary>
         /// Constructs S3 XML repository configuration.
         /// </summary>
         /// <param name="bucketName">Name of S3 bucket to use for storage.</param>
         public S3XmlRepositoryConfig(string bucketName)
+            : this()
         {
             Bucket = bucketName;
-            SetToDefaults();
+        }
+
+        /// <summary>
+        /// Copies settings from another settings object.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Microsoft.Extensions.Options.IOptions{TOptions}"/> requires a parameterless constructor, so we end up with nasty hackery like this for handling programmatic options specification.
+        /// </remarks>
+        /// <param name="input">Input from which to copy configuration.</param>
+        public void CopyFrom(IS3XmlRepositoryConfig input)
+        {
+            Bucket = input.Bucket;
+            KeyPrefix = input.KeyPrefix;
+            MaxS3QueryConcurrency = input.MaxS3QueryConcurrency;
+            StorageClass = input.StorageClass;
+            ServerSideEncryptionMethod = input.ServerSideEncryptionMethod;
+            ServerSideEncryptionCustomerMethod = input.ServerSideEncryptionCustomerMethod;
+            ServerSideEncryptionCustomerProvidedKey = input.ServerSideEncryptionCustomerProvidedKey;
+            ServerSideEncryptionCustomerProvidedKeyMd5 = input.ServerSideEncryptionCustomerProvidedKeyMd5;
+            ServerSideEncryptionKeyManagementServiceKeyId = input.ServerSideEncryptionKeyManagementServiceKeyId;
+            ClientSideCompression = input.ClientSideCompression;
         }
 
         /// <summary>

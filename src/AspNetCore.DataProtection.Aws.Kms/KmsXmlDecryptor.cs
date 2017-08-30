@@ -1,18 +1,21 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
-using Amazon.KeyManagementService;
-using Amazon.KeyManagementService.Model;
-using Microsoft.AspNetCore.DataProtection.XmlEncryption;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Amazon.KeyManagementService;
+using Amazon.KeyManagementService.Model;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AspNetCore.DataProtection.Aws.Kms
 {
+    // ReSharper disable once InheritdocConsiderUsage
     /// <summary>
     /// An ASP.NET key decryptor using AWS KMS
     /// </summary>
@@ -20,27 +23,44 @@ namespace AspNetCore.DataProtection.Aws.Kms
     {
         private readonly ILogger logger;
         private readonly IAmazonKeyManagementService kmsClient;
+        private readonly IOptionsSnapshot<KmsXmlEncryptorConfig> config;
+        private readonly IOptionsSnapshot<DataProtectionOptions> dpOptions;
 
         /// <summary>
         /// Creates a <see cref="KmsXmlDecryptor"/> for decrypting ASP.NET keys with a KMS master key
         /// </summary>
         /// <remarks>
         /// DataProtection has a fairly awful way of making the IXmlDecryptor that by default never just does
-        /// <see cref="IServiceProvider.GetService"/>, instead calling the IServiceProvider constructor directly.
-        /// This means we have to do the resolution of needed objects via IServiceProvider.
+        /// <see cref="IServiceProvider.GetService"/>, instead calling the constructor that takes <see cref="IServiceProvider"/> directly.
+        /// This means we have to do the resolution of needed objects via <see cref="IServiceProvider"/>.
         /// </remarks>
         /// <param name="services">A mandatory <see cref="IServiceProvider"/> to provide services</param>
         public KmsXmlDecryptor(IServiceProvider services)
         {
             kmsClient = services?.GetRequiredService<IAmazonKeyManagementService>() ?? throw new ArgumentNullException(nameof(services));
-            Config = services.GetRequiredService<IKmsXmlEncryptorConfig>();
+            config = services.GetRequiredService<IOptionsSnapshot<KmsXmlEncryptorConfig>>();
+            dpOptions = services.GetRequiredService<IOptionsSnapshot<DataProtectionOptions>>();
             logger = services.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlDecryptor>();
         }
 
         /// <summary>
         /// The configuration of how KMS will decrypt the XML data
         /// </summary>
-        public IKmsXmlEncryptorConfig Config { get; }
+        public IKmsXmlEncryptorConfig Config
+        {
+            get
+            {
+                var retVal = config.Value;
+
+                // Microsoft haven't provided for any validation of options as yet, so what was originally a constructor argument must now be validated by hand at runtime (yuck)
+                if (string.IsNullOrWhiteSpace(retVal.KeyId))
+                {
+                    throw new ArgumentException("A key id is required for KMS operation", nameof(retVal.KeyId));
+                }
+
+                return retVal;
+            }
+        }
 
         /// <inheritdoc/>
         public XElement Decrypt(XElement encryptedElement)
@@ -69,7 +89,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
 
                 var response = await kmsClient.DecryptAsync(new DecryptRequest
                                                             {
-                                                                EncryptionContext = Config.EncryptionContext,
+                                                                EncryptionContext = ContextUpdater.GetEncryptionContext(Config, dpOptions.Value),
                                                                 GrantTokens = Config.GrantTokens,
                                                                 CiphertextBlob = memoryStream
                                                             },

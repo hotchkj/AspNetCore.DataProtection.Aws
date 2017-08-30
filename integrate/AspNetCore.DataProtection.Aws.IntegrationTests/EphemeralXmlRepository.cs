@@ -1,13 +1,17 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
-using Microsoft.AspNetCore.DataProtection.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Repositories;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
+    // ReSharper disable once InheritdocConsiderUsage
     /// <summary>
     /// Borrowed straight from https://github.com/aspnet/DataProtection/blob/master/src/Microsoft.AspNetCore.DataProtection/Repositories/EphemeralXmlRepository.cs
     /// since Microsoft made this internal, which makes external testing that much harder
@@ -48,6 +52,36 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             {
                 storedElements.Add(cloned);
             }
+        }
+    }
+
+    internal static class DataProtectionBuilderExtensions
+    {
+        public static IDataProtectionBuilder PersistKeysToEphemeral(this IDataProtectionBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Services.Configure<KeyManagementOptions>(options => { options.XmlRepository = new EphemeralXmlRepository(); });
+            return builder;
+        }
+
+        public static IDataProtectionBuilder PersistKeysToEphemeral(this IDataProtectionBuilder builder, EphemeralXmlRepository existing)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (existing == null)
+            {
+                throw new ArgumentNullException(nameof(existing));
+            }
+
+            builder.Services.Configure<KeyManagementOptions>(options => { options.XmlRepository = existing; });
+            return builder;
         }
     }
 }

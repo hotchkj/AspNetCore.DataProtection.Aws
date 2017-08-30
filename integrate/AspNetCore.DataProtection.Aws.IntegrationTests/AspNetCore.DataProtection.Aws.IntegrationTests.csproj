@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <Authors>hotchkj</Authors>
-    <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>AspNetCore.DataProtection.Aws.IntegrationTests</AssemblyName>
     <PackageId>AspNetCore.DataProtection.Aws.IntegrationTests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,9 +17,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeCoverage" Version="1.0.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+    <PackageReference Include="Moq" Version="4.7.99" />
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
   </ItemGroup>
@@ -27,6 +28,10 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="config.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
   <ItemGroup>

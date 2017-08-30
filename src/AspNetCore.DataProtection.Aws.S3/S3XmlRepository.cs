@@ -1,23 +1,25 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
-using Amazon.S3;
-using Amazon.S3.Model;
-using Microsoft.AspNetCore.DataProtection.Repositories;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Security.Cryptography;
+using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Collections.ObjectModel;
-using System.IO.Compression;
+using Amazon.S3;
+using Amazon.S3.Model;
+using AspNetCore.DataProtection.Aws.S3.Internals;
+using Microsoft.AspNetCore.DataProtection.Repositories;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AspNetCore.DataProtection.Aws.S3
 {
+    // ReSharper disable once InheritdocConsiderUsage
     /// <summary>
     /// An XML repository backed by AWS S3.
     /// </summary>
@@ -26,30 +28,33 @@ namespace AspNetCore.DataProtection.Aws.S3
         private readonly ILogger logger;
         private readonly IMockingWrapper mockWrapper;
         private readonly IAmazonS3 s3Client;
+        private readonly IOptionsSnapshot<S3XmlRepositoryConfig> config;
 
         /// <summary>
         /// S3 metadata header for the friendly name of the stored XML element.
         /// </summary>
         public const string FriendlyNameMetadata = "xml-friendly-name";
 
+        // ReSharper disable once InheritdocConsiderUsage
         /// <summary>
         /// Creates a <see cref="S3XmlRepository"/> with keys stored at the given bucket.
         /// </summary>
         /// <param name="s3Client">The S3 client.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        public S3XmlRepository(IAmazonS3 s3Client, IS3XmlRepositoryConfig config)
+        public S3XmlRepository(IAmazonS3 s3Client, IOptionsSnapshot<S3XmlRepositoryConfig> config)
             : this(s3Client, config, null)
         {
         }
 
+        // ReSharper disable once InheritdocConsiderUsage
         /// <summary>
         /// Creates a <see cref="S3XmlRepository"/> with keys stored at the given bucket &amp; optional key prefix.
         /// </summary>
         /// <param name="s3Client">The S3 client.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
-        public S3XmlRepository(IAmazonS3 s3Client, IS3XmlRepositoryConfig config, IServiceProvider services)
-            : this(s3Client, config, services, new MockingWrapper())
+        /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to provide logging infrastructure.</param>
+        public S3XmlRepository(IAmazonS3 s3Client, IOptionsSnapshot<S3XmlRepositoryConfig> config, ILoggerFactory loggerFactory)
+            : this(s3Client, config, loggerFactory, new MockingWrapper())
         {
         }
 
@@ -58,20 +63,34 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// </summary>
         /// <param name="s3Client">The S3 client.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        /// <param name="services">An optional <see cref="IServiceProvider"/> to provide ancillary services.</param>
+        /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to provide logging infrastructure.</param>
         /// <param name="mockWrapper">Wrapper object to ensure unit testing is feasible.</param>
-        public S3XmlRepository(IAmazonS3 s3Client, IS3XmlRepositoryConfig config, IServiceProvider services, IMockingWrapper mockWrapper)
+        public S3XmlRepository(IAmazonS3 s3Client, IOptionsSnapshot<S3XmlRepositoryConfig> config, ILoggerFactory loggerFactory, IMockingWrapper mockWrapper)
         {
             this.s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
-            Config = config ?? throw new ArgumentNullException(nameof(config));
-            logger = services?.GetService<ILoggerFactory>()?.CreateLogger<S3XmlRepository>();
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
+            logger = loggerFactory?.CreateLogger<S3XmlRepository>();
             this.mockWrapper = mockWrapper;
         }
 
         /// <summary>
         /// The bucket into which key material will be written.
         /// </summary>
-        public IS3XmlRepositoryConfig Config { get; }
+        public IS3XmlRepositoryConfig Config
+        {
+            get
+            {
+                var retVal = config.Value;
+
+                // Microsoft haven't provided for any validation of options as yet, so what was originally a constructor argument must now be validated by hand at runtime (yuck)
+                if (string.IsNullOrWhiteSpace(retVal.Bucket))
+                {
+                    throw new ArgumentException("A bucket name is required for S3 access", nameof(retVal.Bucket));
+                }
+
+                return retVal;
+            }
+        }
 
         /// <inheritdoc/>
         public IReadOnlyCollection<XElement> GetAllElements()

@@ -10,10 +10,9 @@ namespace AspNetCore.DataProtection.Aws.Tests
         [Fact]
         public void ExpectConstructorRoundTrip()
         {
-            var config = new KmsXmlEncryptorConfig("appId", "keyId");
+            var config = new KmsXmlEncryptorConfig("keyId");
 
             Assert.Equal("keyId", config.KeyId);
-            Assert.Equal("appId", config.EncryptionContext[KmsConstants.ApplicationEncryptionContextKey]);
 
             // strictly a List & Dictionary test, but validates the config doesn't really care about these entries as long as the user sets them up how they want
             config.GrantTokens.Add("token");
@@ -22,6 +21,25 @@ namespace AspNetCore.DataProtection.Aws.Tests
             config.EncryptionContext.Add("myContext", "myValue");
             Assert.Contains("myContext", config.EncryptionContext.Keys);
             Assert.Contains("myValue", config.EncryptionContext.Values);
+        }
+
+        [Fact]
+        public void ExpectConstructorCopy()
+        {
+            var config = new KmsXmlEncryptorConfig { KeyId = "keyId" };
+            config.EncryptionContext.Add("myContext", "myValue");
+            config.GrantTokens.Add("token");
+            config.DiscriminatorAsContext = false;
+            config.HashDiscriminatorContext = false;
+
+            var copy = new KmsXmlEncryptorConfig();
+            copy.CopyFrom(config);
+
+            Assert.Equal(config.KeyId, copy.KeyId);
+            Assert.Equal(config.EncryptionContext, copy.EncryptionContext);
+            Assert.Equal(config.GrantTokens, copy.GrantTokens);
+            Assert.Equal(config.DiscriminatorAsContext, copy.DiscriminatorAsContext);
+            Assert.Equal(config.HashDiscriminatorContext, copy.HashDiscriminatorContext);
         }
     }
 }
