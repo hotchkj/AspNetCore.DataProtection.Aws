@@ -43,6 +43,8 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                 Assert.Contains("someContext", encryptor.Config.EncryptionContext.Keys);
                 Assert.Equal("someContextValue", encryptor.Config.EncryptionContext["someContext"]);
                 Assert.Contains("someToken", encryptor.Config.GrantTokens);
+                Assert.Equal(false, encryptor.Config.DiscriminatorAsContext);
+                Assert.Equal(false, encryptor.Config.HashDiscriminatorContext);
             }
         }
     }

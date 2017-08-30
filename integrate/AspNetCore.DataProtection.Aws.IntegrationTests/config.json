@@ -18,6 +18,8 @@
     },
     "grantTokens": [
       "someToken"
-    ]
+    ],
+    "discriminatorAsContext": false,
+    "hashDiscriminatorContext": false 
   } 
 }
