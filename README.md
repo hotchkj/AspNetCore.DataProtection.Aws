@@ -123,8 +123,9 @@ public void ConfigureServices(IServiceCollection services)
 KMS key ID _must_ be specified. If the `IAmazonKeyManagementService` interface is discoverable via Dependency Injection in `IServiceCollection`, the constructor argument of `AmazonKeyManagementServiceClient` can be omitted.
 
 _Migration Note:_ The `1.0` release of `AspNetCore.DataProtection.Aws.Kms` had `KmsXmlEncryptorConfig` take the application name as an argument, which was then used
-to populate an encryption context.
-The Data Protection application discriminator is now used to provide this value as it fulfils a similar function - that of identifying and allowing/preventing cross-talk between applications.
+to populate an encryption context. The Data Protection application discriminator is now used to provide this value as it fulfils a similar function - that of identifying and
+allowing/preventing cross-talk between applications.
 
 To ensure correct operation against existing data encrypted with `1.0`, include `SetApplicationName`, set `DiscriminatorAsContext` to `true` and
-`HashDiscriminatorContext` to `false` when setting up Data Protection for matching functionality.
+`HashDiscriminatorContext` to `false` when setting up Data Protection for matching functionality. If these values need to differ, the above can instead be
+created as a custom context with key of `KmsConstants.ApplicationEncryptionContextKey`.

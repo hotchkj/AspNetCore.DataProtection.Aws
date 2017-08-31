@@ -28,7 +28,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         private readonly ILogger logger;
         private readonly IMockingWrapper mockWrapper;
         private readonly IAmazonS3 s3Client;
-        private readonly IOptionsSnapshot<S3XmlRepositoryConfig> config;
+        private readonly IOptions<S3XmlRepositoryConfig> config;
 
         /// <summary>
         /// S3 metadata header for the friendly name of the stored XML element.
@@ -41,7 +41,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// </summary>
         /// <param name="s3Client">The S3 client.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        public S3XmlRepository(IAmazonS3 s3Client, IOptionsSnapshot<S3XmlRepositoryConfig> config)
+        public S3XmlRepository(IAmazonS3 s3Client, IOptions<S3XmlRepositoryConfig> config)
             : this(s3Client, config, null)
         {
         }
@@ -53,7 +53,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// <param name="s3Client">The S3 client.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
         /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to provide logging infrastructure.</param>
-        public S3XmlRepository(IAmazonS3 s3Client, IOptionsSnapshot<S3XmlRepositoryConfig> config, ILoggerFactory loggerFactory)
+        public S3XmlRepository(IAmazonS3 s3Client, IOptions<S3XmlRepositoryConfig> config, ILoggerFactory loggerFactory)
             : this(s3Client, config, loggerFactory, new MockingWrapper())
         {
         }
@@ -65,7 +65,7 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// <param name="config">The configuration object specifying how to write to S3.</param>
         /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to provide logging infrastructure.</param>
         /// <param name="mockWrapper">Wrapper object to ensure unit testing is feasible.</param>
-        public S3XmlRepository(IAmazonS3 s3Client, IOptionsSnapshot<S3XmlRepositoryConfig> config, ILoggerFactory loggerFactory, IMockingWrapper mockWrapper)
+        public S3XmlRepository(IAmazonS3 s3Client, IOptions<S3XmlRepositoryConfig> config, ILoggerFactory loggerFactory, IMockingWrapper mockWrapper)
         {
             this.s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
             this.config = config ?? throw new ArgumentNullException(nameof(config));

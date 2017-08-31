@@ -118,17 +118,18 @@ namespace AspNetCore.DataProtection.Aws.S3
         private static IDataProtectionBuilder PersistKeysToAwsS3Raw(this IDataProtectionBuilder builder, IAmazonS3 s3Client, IS3XmlRepositoryConfig config)
         {
             builder.Services.AddSingleton<IConfigureOptions<S3XmlRepositoryConfig>>(new DirectConfigure(config));
-            return builder.PersistKeysToAwsS3Impl(s3Client, sp => sp.GetRequiredService<IOptionsSnapshot<S3XmlRepositoryConfig>>());
+            return builder.PersistKeysToAwsS3Impl(s3Client, sp => sp.GetRequiredService<IOptions<S3XmlRepositoryConfig>>());
         }
 
         private static IDataProtectionBuilder PersistKeysToAwsS3Config(this IDataProtectionBuilder builder, IAmazonS3 s3Client, IConfiguration config)
         {
             builder.Services.Configure<S3XmlRepositoryConfig>(config);
-            return builder.PersistKeysToAwsS3Impl(s3Client, sp => sp.GetRequiredService<IOptionsSnapshot<S3XmlRepositoryConfig>>());
+            return builder.PersistKeysToAwsS3Impl(s3Client, sp => sp.GetRequiredService<IOptions<S3XmlRepositoryConfig>>());
         }
 
-        private static IDataProtectionBuilder PersistKeysToAwsS3Impl(this IDataProtectionBuilder builder, IAmazonS3 s3Client, Func<IServiceProvider, IOptionsSnapshot<S3XmlRepositoryConfig>> getOptions)
+        private static IDataProtectionBuilder PersistKeysToAwsS3Impl(this IDataProtectionBuilder builder, IAmazonS3 s3Client, Func<IServiceProvider, IOptions<S3XmlRepositoryConfig>> getOptions)
         {
+            builder.Services.AddOptions();
             builder.Services.TryAddSingleton<IMockingWrapper, MockingWrapper>();
             builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(serviceProvider =>
                                                                                    {

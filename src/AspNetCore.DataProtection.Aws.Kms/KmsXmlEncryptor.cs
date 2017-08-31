@@ -22,8 +22,8 @@ namespace AspNetCore.DataProtection.Aws.Kms
     {
         private readonly ILogger logger;
         private readonly IAmazonKeyManagementService kmsClient;
-        private readonly IOptionsSnapshot<KmsXmlEncryptorConfig> config;
-        private readonly IOptionsSnapshot<DataProtectionOptions> dpOptions;
+        private readonly IOptions<KmsXmlEncryptorConfig> config;
+        private readonly IOptions<DataProtectionOptions> dpOptions;
 
         // ReSharper disable once InheritdocConsiderUsage
         /// <summary>
@@ -32,7 +32,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <param name="kmsClient">The KMS client</param>
         /// <param name="config">The configuration object specifying which key data in KMS to use</param>
         /// <param name="dpOptions">Main data protection options</param>
-        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IOptionsSnapshot<KmsXmlEncryptorConfig> config, IOptionsSnapshot<DataProtectionOptions> dpOptions)
+        public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient, IOptions<KmsXmlEncryptorConfig> config, IOptions<DataProtectionOptions> dpOptions)
             : this(kmsClient, config, dpOptions, null)
         {
         }
@@ -45,8 +45,8 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <param name="dpOptions">Main data protection options</param>
         /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to provide logging infrastructure.</param>
         public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient,
-                               IOptionsSnapshot<KmsXmlEncryptorConfig> config,
-                               IOptionsSnapshot<DataProtectionOptions> dpOptions,
+                               IOptions<KmsXmlEncryptorConfig> config,
+                               IOptions<DataProtectionOptions> dpOptions,
                                ILoggerFactory loggerFactory)
         {
             this.kmsClient = kmsClient ?? throw new ArgumentNullException(nameof(kmsClient));

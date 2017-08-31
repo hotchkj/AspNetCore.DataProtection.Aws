@@ -21,8 +21,8 @@ namespace AspNetCore.DataProtection.Aws.Tests
         private readonly KmsXmlEncryptor encryptor;
         private readonly MockRepository repository;
         private readonly Mock<IAmazonKeyManagementService> kmsClient;
-        private readonly Mock<IOptionsSnapshot<KmsXmlEncryptorConfig>> encryptConfig;
-        private readonly Mock<IOptionsSnapshot<DataProtectionOptions>> dpOptions;
+        private readonly Mock<IOptions<KmsXmlEncryptorConfig>> encryptConfig;
+        private readonly Mock<IOptions<DataProtectionOptions>> dpOptions;
         private const string KeyId = "keyId";
         private const string ElementName = "name";
         private readonly Dictionary<string, string> encryptionContext = new Dictionary<string, string>();
@@ -32,8 +32,8 @@ namespace AspNetCore.DataProtection.Aws.Tests
         {
             repository = new MockRepository(MockBehavior.Strict);
             kmsClient = repository.Create<IAmazonKeyManagementService>();
-            encryptConfig = repository.Create<IOptionsSnapshot<KmsXmlEncryptorConfig>>();
-            dpOptions = repository.Create<IOptionsSnapshot<DataProtectionOptions>>();
+            encryptConfig = repository.Create<IOptions<KmsXmlEncryptorConfig>>();
+            dpOptions = repository.Create<IOptions<DataProtectionOptions>>();
 
             encryptor = new KmsXmlEncryptor(kmsClient.Object, encryptConfig.Object, dpOptions.Object);
         }

@@ -116,17 +116,18 @@ namespace AspNetCore.DataProtection.Aws.Kms
         private static IDataProtectionBuilder ProtectKeysWithAwsKmsRaw(this IDataProtectionBuilder builder, IAmazonKeyManagementService kmsClient, IKmsXmlEncryptorConfig config)
         {
             builder.Services.AddSingleton<IConfigureOptions<KmsXmlEncryptorConfig>>(new DirectConfigure(config));
-            return builder.ProtectKeysWithAwsKmsImpl(kmsClient, sp => sp.GetRequiredService<IOptionsSnapshot<KmsXmlEncryptorConfig>>());
+            return builder.ProtectKeysWithAwsKmsImpl(kmsClient, sp => sp.GetRequiredService<IOptions<KmsXmlEncryptorConfig>>());
         }
 
         private static IDataProtectionBuilder ProtectKeysWithAwsKmsConfig(this IDataProtectionBuilder builder, IAmazonKeyManagementService kmsClient, IConfiguration config)
         {
             builder.Services.Configure<KmsXmlEncryptorConfig>(config);
-            return builder.ProtectKeysWithAwsKmsImpl(kmsClient, sp => sp.GetRequiredService<IOptionsSnapshot<KmsXmlEncryptorConfig>>());
+            return builder.ProtectKeysWithAwsKmsImpl(kmsClient, sp => sp.GetRequiredService<IOptions<KmsXmlEncryptorConfig>>());
         }
 
-        private static IDataProtectionBuilder ProtectKeysWithAwsKmsImpl(this IDataProtectionBuilder builder, IAmazonKeyManagementService kmsClient, Func<IServiceProvider, IOptionsSnapshot<KmsXmlEncryptorConfig>> getOptions)
+        private static IDataProtectionBuilder ProtectKeysWithAwsKmsImpl(this IDataProtectionBuilder builder, IAmazonKeyManagementService kmsClient, Func<IServiceProvider, IOptions<KmsXmlEncryptorConfig>> getOptions)
         {
+            builder.Services.AddOptions();
             builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(serviceProvider =>
                                                                                    {
                                                                                        var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
@@ -135,7 +136,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
                                                                                            kmsClient = serviceProvider.GetRequiredService<IAmazonKeyManagementService>();
                                                                                        }
                                                                                        var boundOptions = getOptions(serviceProvider);
-                                                                                       var dpOptions = serviceProvider.GetRequiredService<IOptionsSnapshot<DataProtectionOptions>>();
+                                                                                       var dpOptions = serviceProvider.GetRequiredService<IOptions<DataProtectionOptions>>();
                                                                                        return new ConfigureOptions<KeyManagementOptions>(options =>
                                                                                                                                          {
                                                                                                                                              options.XmlEncryptor = loggerFactory != null ? new KmsXmlEncryptor(kmsClient, boundOptions, dpOptions, loggerFactory) : new KmsXmlEncryptor(kmsClient, boundOptions, dpOptions);

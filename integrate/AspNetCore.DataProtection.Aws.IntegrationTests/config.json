@@ -20,6 +20,17 @@
       "someToken"
     ],
     "discriminatorAsContext": false,
-    "hashDiscriminatorContext": false 
-  } 
+    "hashDiscriminatorContext": false
+  },
+  "s3ExplicitAwsTestCase": {
+    "bucket": "hotchkj-dataprotection-s3-integration-tests-eu-west-1",
+    "keyPrefix": "RealXmlKeyManager2/"
+  },
+  "s3ImplicitAwsTestCase": {
+    "bucket": "hotchkj-dataprotection-s3-integration-tests-eu-west-1",
+    "keyPrefix": "RealXmlKeyManager3/"
+  },
+  "kmsTestCase": {
+    "keyId": "alias/KmsIntegrationTesting"
+  }
 }

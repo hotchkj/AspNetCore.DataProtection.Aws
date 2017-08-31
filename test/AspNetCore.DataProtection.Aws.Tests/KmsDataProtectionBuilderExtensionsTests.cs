@@ -24,8 +24,8 @@ namespace AspNetCore.DataProtection.Aws.Tests
         private readonly Mock<IAmazonKeyManagementService> client;
         private readonly Mock<IServiceProvider> provider;
         private readonly Mock<ILoggerFactory> loggerFactory;
-        private readonly Mock<IOptionsSnapshot<KmsXmlEncryptorConfig>> snapshot;
-        private readonly Mock<IOptionsSnapshot<DataProtectionOptions>> dpSnapshot;
+        private readonly Mock<IOptions<KmsXmlEncryptorConfig>> snapshot;
+        private readonly Mock<IOptions<DataProtectionOptions>> dpSnapshot;
         private readonly MockRepository repository;
 
         public KmsDataProtectionBuilderExtensionsTests()
@@ -36,8 +36,8 @@ namespace AspNetCore.DataProtection.Aws.Tests
             svcCollection = repository.Create<IServiceCollection>();
             provider = repository.Create<IServiceProvider>();
             loggerFactory = repository.Create<ILoggerFactory>();
-            snapshot = repository.Create<IOptionsSnapshot<KmsXmlEncryptorConfig>>();
-            dpSnapshot = repository.Create<IOptionsSnapshot<DataProtectionOptions>>();
+            snapshot = repository.Create<IOptions<KmsXmlEncryptorConfig>>();
+            dpSnapshot = repository.Create<IOptions<DataProtectionOptions>>();
         }
 
         public void Dispose()
@@ -71,7 +71,6 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 builder.Object.ProtectKeysWithAwsKms(config);
             }
 
-            Assert.Equal(withClient ? 5 : 4, services.Count);
             Assert.Equal(withClient ? 1 : 0, services.Count(x => x.ServiceType == typeof(IAmazonKeyManagementService)));
 
             // IConfigureOptions is designed & expected to be present multiple times, so expect two after two calls
@@ -93,8 +92,8 @@ namespace AspNetCore.DataProtection.Aws.Tests
             ((IConfigureOptions<KmsXmlEncryptorConfig>)configureObject).Configure(optionsObject);
 
             provider.Setup(x => x.GetService(typeof(ILoggerFactory))).Returns(loggerFactory.Object);
-            provider.Setup(x => x.GetService(typeof(IOptionsSnapshot<KmsXmlEncryptorConfig>))).Returns(snapshot.Object);
-            provider.Setup(x => x.GetService(typeof(IOptionsSnapshot<DataProtectionOptions>))).Returns(dpSnapshot.Object);
+            provider.Setup(x => x.GetService(typeof(IOptions<KmsXmlEncryptorConfig>))).Returns(snapshot.Object);
+            provider.Setup(x => x.GetService(typeof(IOptions<DataProtectionOptions>))).Returns(dpSnapshot.Object);
             loggerFactory.Setup(x => x.CreateLogger(typeof(KmsXmlEncryptor).FullName)).Returns(repository.Create<ILogger<KmsXmlEncryptor>>().Object);
             snapshot.Setup(x => x.Value).Returns(optionsObject);
             var dbOptions = new DataProtectionOptions();
@@ -136,7 +135,6 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 builder.Object.ProtectKeysWithAwsKms(configMock.Object);
             }
 
-            Assert.Equal(withClient ? 7 : 6, services.Count); // 2 extra from configuration monitoring
             Assert.Equal(withClient ? 1 : 0, services.Count(x => x.ServiceType == typeof(IAmazonKeyManagementService)));
 
             // IConfigureOptions is designed & expected to be present multiple times, so expect two after two calls
@@ -158,8 +156,8 @@ namespace AspNetCore.DataProtection.Aws.Tests
             ((IConfigureOptions<KmsXmlEncryptorConfig>)configureObject).Configure(optionsObject);
 
             provider.Setup(x => x.GetService(typeof(ILoggerFactory))).Returns(loggerFactory.Object);
-            provider.Setup(x => x.GetService(typeof(IOptionsSnapshot<KmsXmlEncryptorConfig>))).Returns(snapshot.Object);
-            provider.Setup(x => x.GetService(typeof(IOptionsSnapshot<DataProtectionOptions>))).Returns(dpSnapshot.Object);
+            provider.Setup(x => x.GetService(typeof(IOptions<KmsXmlEncryptorConfig>))).Returns(snapshot.Object);
+            provider.Setup(x => x.GetService(typeof(IOptions<DataProtectionOptions>))).Returns(dpSnapshot.Object);
             loggerFactory.Setup(x => x.CreateLogger(typeof(KmsXmlEncryptor).FullName)).Returns(repository.Create<ILogger<KmsXmlEncryptor>>().Object);
             snapshot.Setup(x => x.Value).Returns(optionsObject);
             var dbOptions = new DataProtectionOptions();
