@@ -32,7 +32,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             s3Client = new AmazonS3Client(RegionEndpoint.EUWest1);
             // Override the default for ease of debugging. Explicitly turn on for compression tests.
             config = new S3XmlRepositoryConfig(BucketName) { ClientSideCompression = false };
-            xmlRepo = new S3XmlRepository(s3Client, new DirectOptionsSnapshot<S3XmlRepositoryConfig>(config));
+            xmlRepo = new S3XmlRepository(s3Client, new DirectOptions<S3XmlRepositoryConfig>(config));
             s3Cleanup = new CleanupS3(s3Client);
         }
 

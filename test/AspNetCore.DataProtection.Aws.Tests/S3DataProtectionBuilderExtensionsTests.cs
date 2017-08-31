@@ -25,7 +25,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
         private readonly Mock<IAmazonS3> client;
         private readonly Mock<IServiceProvider> provider;
         private readonly Mock<ILoggerFactory> loggerFactory;
-        private readonly Mock<IOptionsSnapshot<S3XmlRepositoryConfig>> snapshot;
+        private readonly Mock<IOptions<S3XmlRepositoryConfig>> snapshot;
         private readonly MockRepository repository;
 
         public S3DataProtectionBuilderExtensionsTests()
@@ -36,7 +36,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
             svcCollection = repository.Create<IServiceCollection>();
             provider = repository.Create<IServiceProvider>();
             loggerFactory = repository.Create<ILoggerFactory>();
-            snapshot = repository.Create<IOptionsSnapshot<S3XmlRepositoryConfig>>();
+            snapshot = repository.Create<IOptions<S3XmlRepositoryConfig>>();
         }
 
         public void Dispose()
@@ -71,7 +71,6 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 provider.Setup(x => x.GetService(typeof(IAmazonS3))).Returns(client.Object);
             }
 
-            Assert.Equal(5, services.Count);
             Assert.Equal(1, services.Count(x => x.ServiceType == typeof(IMockingWrapper)));
 
             // IConfigureOptions is designed & expected to be present multiple times, so expect two after two calls
@@ -88,7 +87,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
             ((IConfigureOptions<S3XmlRepositoryConfig>)configureObject).Configure(optionsObject);
 
             provider.Setup(x => x.GetService(typeof(ILoggerFactory))).Returns(loggerFactory.Object);
-            provider.Setup(x => x.GetService(typeof(IOptionsSnapshot<S3XmlRepositoryConfig>))).Returns(snapshot.Object);
+            provider.Setup(x => x.GetService(typeof(IOptions<S3XmlRepositoryConfig>))).Returns(snapshot.Object);
             loggerFactory.Setup(x => x.CreateLogger(typeof(S3XmlRepository).FullName)).Returns(repository.Create<ILogger<S3XmlRepository>>().Object);
             snapshot.Setup(x => x.Value).Returns(optionsObject);
 
@@ -129,7 +128,6 @@ namespace AspNetCore.DataProtection.Aws.Tests
                 provider.Setup(x => x.GetService(typeof(IAmazonS3))).Returns(client.Object);
             }
 
-            Assert.Equal(7, services.Count); // 2 extra from configuration monitoring
             Assert.Equal(1, services.Count(x => x.ServiceType == typeof(IMockingWrapper)));
 
             // IConfigureOptions is designed & expected to be present multiple times, so expect two after two calls
@@ -146,7 +144,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
             ((IConfigureOptions<S3XmlRepositoryConfig>)configureObject).Configure(optionsObject);
 
             provider.Setup(x => x.GetService(typeof(ILoggerFactory))).Returns(loggerFactory.Object);
-            provider.Setup(x => x.GetService(typeof(IOptionsSnapshot<S3XmlRepositoryConfig>))).Returns(snapshot.Object);
+            provider.Setup(x => x.GetService(typeof(IOptions<S3XmlRepositoryConfig>))).Returns(snapshot.Object);
             loggerFactory.Setup(x => x.CreateLogger(typeof(S3XmlRepository).FullName)).Returns(repository.Create<ILogger<S3XmlRepository>>().Object);
             snapshot.Setup(x => x.Value).Returns(optionsObject);
 

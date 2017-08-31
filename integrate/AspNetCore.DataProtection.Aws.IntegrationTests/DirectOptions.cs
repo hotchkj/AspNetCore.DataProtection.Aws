@@ -5,9 +5,9 @@ using Microsoft.Extensions.Options;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
-    public class DirectOptionsSnapshot<TOptions> : IOptionsSnapshot<TOptions> where TOptions : class, new()
+    public class DirectOptions<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
-        public DirectOptionsSnapshot(TOptions actualValue)
+        public DirectOptions(TOptions actualValue)
         {
             Value = actualValue;
         }

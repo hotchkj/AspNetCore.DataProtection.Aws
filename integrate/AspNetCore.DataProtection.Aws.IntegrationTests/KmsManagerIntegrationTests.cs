@@ -16,12 +16,15 @@ using Xunit;
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {
-    public class KmsManagerIntegrationTests : IDisposable
+    public class KmsManagerIntegrationTests : IClassFixture<ConfigurationFixture>, IDisposable
     {
         private readonly IAmazonKeyManagementService kmsClient;
+        private readonly ConfigurationFixture fixture;
 
-        public KmsManagerIntegrationTests()
+        public KmsManagerIntegrationTests(ConfigurationFixture fixture)
         {
+            this.fixture = fixture;
+
             // Expectation that local SDK has been configured correctly, whether via VS Tools or user config files
             kmsClient = new AmazonKeyManagementServiceClient(RegionEndpoint.EUWest1);
         }
@@ -59,6 +62,36 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         }
 
         [Fact]
+        public void ExpectFullKeyManagerExplicitAwsStoreRetrieveWithConfigToSucceed()
+        {
+            var section = fixture.Configuration.GetSection("kmsTestCase");
+
+            // Just make sure config is what is actually expected - of course normally you'd not access the config like this directly
+            Assert.Equal(KmsIntegrationTests.KmsTestingKey, section["keyId"]);
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddDataProtection()
+                             .PersistKeysToEphemeral()
+                             .ProtectKeysWithAwsKms(kmsClient, section);
+            using (var serviceProvider = serviceCollection.BuildServiceProvider())
+            {
+                var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IOptions<KeyManagementOptions>>(),
+                                                   serviceProvider.GetRequiredService<IActivator>());
+
+                var activationDate = new DateTimeOffset(new DateTime(1980, 1, 1));
+                var expirationDate = new DateTimeOffset(new DateTime(1980, 6, 1));
+                keyManager.CreateNewKey(activationDate, expirationDate);
+
+                IReadOnlyCollection<IKey> keys = keyManager.GetAllKeys();
+
+                Assert.Equal(1, keys.Count);
+                Assert.Equal(activationDate, keys.Single().ActivationDate);
+                Assert.Equal(expirationDate, keys.Single().ExpirationDate);
+                Assert.NotNull(keys.Single().Descriptor);
+            }
+        }
+
+        [Fact]
         public void ExpectFullKeyManagerStoreRetrieveToSucceed()
         {
             var config = new KmsXmlEncryptorConfig(KmsIntegrationTests.KmsTestingKey);
@@ -68,6 +101,37 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             serviceCollection.AddDataProtection()
                              .PersistKeysToEphemeral()
                              .ProtectKeysWithAwsKms(config);
+            using (var serviceProvider = serviceCollection.BuildServiceProvider())
+            {
+                var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IOptions<KeyManagementOptions>>(),
+                                                   serviceProvider.GetRequiredService<IActivator>());
+
+                var activationDate = new DateTimeOffset(new DateTime(1980, 1, 1));
+                var expirationDate = new DateTimeOffset(new DateTime(1980, 6, 1));
+                keyManager.CreateNewKey(activationDate, expirationDate);
+
+                IReadOnlyCollection<IKey> keys = keyManager.GetAllKeys();
+
+                Assert.Equal(1, keys.Count);
+                Assert.Equal(activationDate, keys.Single().ActivationDate);
+                Assert.Equal(expirationDate, keys.Single().ExpirationDate);
+                Assert.NotNull(keys.Single().Descriptor);
+            }
+        }
+
+        [Fact]
+        public void ExpectFullKeyManagerStoreRetrieveWithConfigToSucceed()
+        {
+            var section = fixture.Configuration.GetSection("kmsTestCase");
+
+            // Just make sure config is what is actually expected - of course normally you'd not access the config like this directly
+            Assert.Equal(KmsIntegrationTests.KmsTestingKey, section["keyId"]);
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(kmsClient);
+            serviceCollection.AddDataProtection()
+                             .PersistKeysToEphemeral()
+                             .ProtectKeysWithAwsKms(section);
             using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
                 var keyManager = new XmlKeyManager(serviceProvider.GetRequiredService<IOptions<KeyManagementOptions>>(),

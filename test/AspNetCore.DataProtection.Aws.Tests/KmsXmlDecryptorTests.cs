@@ -22,8 +22,8 @@ namespace AspNetCore.DataProtection.Aws.Tests
         private readonly KmsXmlDecryptor decryptor;
         private readonly MockRepository repository;
         private readonly Mock<IAmazonKeyManagementService> kmsClient;
-        private readonly Mock<IOptionsSnapshot<KmsXmlEncryptorConfig>> encryptConfig;
-        private readonly Mock<IOptionsSnapshot<DataProtectionOptions>> dpOptions;
+        private readonly Mock<IOptions<KmsXmlEncryptorConfig>> encryptConfig;
+        private readonly Mock<IOptions<DataProtectionOptions>> dpOptions;
         private const string KeyId = "keyId";
         private const string ElementName = "name";
         private readonly Dictionary<string, string> encryptionContext = new Dictionary<string, string>();
@@ -33,13 +33,13 @@ namespace AspNetCore.DataProtection.Aws.Tests
         {
             repository = new MockRepository(MockBehavior.Strict);
             kmsClient = repository.Create<IAmazonKeyManagementService>();
-            encryptConfig = repository.Create<IOptionsSnapshot<KmsXmlEncryptorConfig>>();
-            dpOptions = repository.Create<IOptionsSnapshot<DataProtectionOptions>>();
+            encryptConfig = repository.Create<IOptions<KmsXmlEncryptorConfig>>();
+            dpOptions = repository.Create<IOptions<DataProtectionOptions>>();
             var serviceProvider = repository.Create<IServiceProvider>();
 
-            serviceProvider.Setup(x => x.GetService(typeof(IOptionsSnapshot<KmsXmlEncryptorConfig>)))
+            serviceProvider.Setup(x => x.GetService(typeof(IOptions<KmsXmlEncryptorConfig>)))
                            .Returns(encryptConfig.Object);
-            serviceProvider.Setup(x => x.GetService(typeof(IOptionsSnapshot<DataProtectionOptions>)))
+            serviceProvider.Setup(x => x.GetService(typeof(IOptions<DataProtectionOptions>)))
                            .Returns(dpOptions.Object);
             serviceProvider.Setup(x => x.GetService(typeof(IAmazonKeyManagementService)))
                            .Returns(kmsClient.Object);

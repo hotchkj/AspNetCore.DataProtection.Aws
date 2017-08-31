@@ -23,8 +23,8 @@ namespace AspNetCore.DataProtection.Aws.Kms
     {
         private readonly ILogger logger;
         private readonly IAmazonKeyManagementService kmsClient;
-        private readonly IOptionsSnapshot<KmsXmlEncryptorConfig> config;
-        private readonly IOptionsSnapshot<DataProtectionOptions> dpOptions;
+        private readonly IOptions<KmsXmlEncryptorConfig> config;
+        private readonly IOptions<DataProtectionOptions> dpOptions;
 
         /// <summary>
         /// Creates a <see cref="KmsXmlDecryptor"/> for decrypting ASP.NET keys with a KMS master key
@@ -38,8 +38,8 @@ namespace AspNetCore.DataProtection.Aws.Kms
         public KmsXmlDecryptor(IServiceProvider services)
         {
             kmsClient = services?.GetRequiredService<IAmazonKeyManagementService>() ?? throw new ArgumentNullException(nameof(services));
-            config = services.GetRequiredService<IOptionsSnapshot<KmsXmlEncryptorConfig>>();
-            dpOptions = services.GetRequiredService<IOptionsSnapshot<DataProtectionOptions>>();
+            config = services.GetRequiredService<IOptions<KmsXmlEncryptorConfig>>();
+            dpOptions = services.GetRequiredService<IOptions<DataProtectionOptions>>();
             logger = services.GetService<ILoggerFactory>()?.CreateLogger<KmsXmlDecryptor>();
         }
 

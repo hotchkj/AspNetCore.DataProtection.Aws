@@ -34,12 +34,12 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             kmsClient = new AmazonKeyManagementServiceClient(RegionEndpoint.EUWest1);
             var encryptConfig = new KmsXmlEncryptorConfig(KmsTestingKey);
             dpOptions = new DataProtectionOptions { ApplicationDiscriminator = ApplicationName };
-            var encryptSnapshot = new DirectOptionsSnapshot<KmsXmlEncryptorConfig>(encryptConfig);
-            var dpSnapshot = new DirectOptionsSnapshot<DataProtectionOptions>(dpOptions);
+            var encryptSnapshot = new DirectOptions<KmsXmlEncryptorConfig>(encryptConfig);
+            var dpSnapshot = new DirectOptions<DataProtectionOptions>(dpOptions);
 
             var svcCollection = new ServiceCollection();
-            svcCollection.AddSingleton<IOptionsSnapshot<KmsXmlEncryptorConfig>>(sp => encryptSnapshot);
-            svcCollection.AddSingleton<IOptionsSnapshot<DataProtectionOptions>>(sp => dpSnapshot);
+            svcCollection.AddSingleton<IOptions<KmsXmlEncryptorConfig>>(sp => encryptSnapshot);
+            svcCollection.AddSingleton<IOptions<DataProtectionOptions>>(sp => dpSnapshot);
             svcCollection.AddSingleton(sp => kmsClient);
             svcProvider = svcCollection.BuildServiceProvider();
 

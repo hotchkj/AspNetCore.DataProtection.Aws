@@ -22,7 +22,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
         private readonly S3XmlRepository xmlRepository;
         private readonly MockRepository repository;
         private readonly Mock<IAmazonS3> s3Client;
-        private readonly Mock<IOptionsSnapshot<S3XmlRepositoryConfig>> config;
+        private readonly Mock<IOptions<S3XmlRepositoryConfig>> config;
         private readonly Mock<IMockingWrapper> mockingWrapper;
         private const string ElementName = "name";
         private const string ElementContent = "test";
@@ -36,7 +36,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
         {
             repository = new MockRepository(MockBehavior.Strict);
             s3Client = repository.Create<IAmazonS3>();
-            config = repository.Create<IOptionsSnapshot<S3XmlRepositoryConfig>>();
+            config = repository.Create<IOptions<S3XmlRepositoryConfig>>();
             mockingWrapper = repository.Create<IMockingWrapper>();
             xmlRepository = new S3XmlRepository(s3Client.Object, config.Object, null, mockingWrapper.Object);
         }
