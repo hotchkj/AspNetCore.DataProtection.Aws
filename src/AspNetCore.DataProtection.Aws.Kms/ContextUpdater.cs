@@ -17,26 +17,24 @@ namespace AspNetCore.DataProtection.Aws.Kms
         public static Dictionary<string, string> GetEncryptionContext(IKmsXmlEncryptorConfig config, DataProtectionOptions dpOptions)
         {
             var encryptionContext = config.EncryptionContext;
-            if (config.DiscriminatorAsContext)
+
+            // Set the application discriminator as part of the context of encryption, given the intent of the discriminator
+            if (config.DiscriminatorAsContext && !string.IsNullOrEmpty(dpOptions.ApplicationDiscriminator))
             {
-                // Set the application discriminator as part of the context of encryption, given the intent of the discriminator
-                if (!string.IsNullOrEmpty(dpOptions.ApplicationDiscriminator))
+                encryptionContext = encryptionContext.ToDictionary(x => x.Key, x => x.Value);
+
+                var contextValue = dpOptions.ApplicationDiscriminator;
+
+                // Some application discriminators (like the defaults) leak sensitive file paths, so hash them
+                if (config.HashDiscriminatorContext)
                 {
-                    encryptionContext = encryptionContext.ToDictionary(x => x.Key, x => x.Value);
-
-                    var contextValue = dpOptions.ApplicationDiscriminator;
-
-                    // Some application discriminators (like the defaults) leak sensitive file paths, so hash them
-                    if (config.HashDiscriminatorContext)
+                    using (var hasher = SHA256.Create())
                     {
-                        using (var hasher = SHA256.Create())
-                        {
-                            contextValue = Convert.ToBase64String(hasher.ComputeHash(Encoding.UTF8.GetBytes(contextValue)));
-                        }
+                        contextValue = Convert.ToBase64String(hasher.ComputeHash(Encoding.UTF8.GetBytes(contextValue)));
                     }
-
-                    encryptionContext[KmsConstants.ApplicationEncryptionContextKey] = contextValue;
                 }
+
+                encryptionContext[KmsConstants.ApplicationEncryptionContextKey] = contextValue;
             }
             return encryptionContext;
         }

@@ -1,6 +1,7 @@
 ﻿// Copyright(c) 2017 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AspNetCore.DataProtection.Aws.S3.Internals
 {
@@ -17,6 +18,7 @@ namespace AspNetCore.DataProtection.Aws.S3.Internals
     }
 
     /// <inheritdoc/>
+    [ExcludeFromCodeCoverage]
     public class MockingWrapper : IMockingWrapper
     {
         /// <inheritdoc/>
