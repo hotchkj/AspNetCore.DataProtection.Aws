@@ -71,6 +71,8 @@ namespace AspNetCore.DataProtection.Aws.Tests
             config.ServerSideEncryptionCustomerProvidedKeyMd5 = "md5";
             config.ServerSideEncryptionKeyManagementServiceKeyId = "keyid";
             config.ClientSideCompression = !config.ClientSideCompression;
+            config.ValidateETag = !config.ValidateETag;
+            config.ValidateMd5Metadata = !config.ValidateMd5Metadata;
 
             var copy = new S3XmlRepositoryConfig();
             copy.CopyFrom(config);
@@ -85,6 +87,8 @@ namespace AspNetCore.DataProtection.Aws.Tests
             Assert.Equal(config.ServerSideEncryptionCustomerProvidedKeyMd5, copy.ServerSideEncryptionCustomerProvidedKeyMd5);
             Assert.Equal(config.ServerSideEncryptionKeyManagementServiceKeyId, copy.ServerSideEncryptionKeyManagementServiceKeyId);
             Assert.Equal(config.ClientSideCompression, copy.ClientSideCompression);
+            Assert.Equal(config.ValidateETag, copy.ValidateETag);
+            Assert.Equal(config.ValidateMd5Metadata, copy.ValidateMd5Metadata);
         }
     }
 }

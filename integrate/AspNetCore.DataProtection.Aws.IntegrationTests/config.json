@@ -9,7 +9,9 @@
     "serverSideEncryptionKeyManagementServiceKeyId": "servKeyId",
     "storageClass": "Glacier",
     "clientSideCompression": false,
-    "maxS3QueryConcurrency": 7
+    "maxS3QueryConcurrency": 7,
+    "validateETag": true,
+    "ValidateMd5Metadata":  false 
   },
   "kmsXmlEncrytionFull": {
     "keyId": "key",

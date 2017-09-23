@@ -43,6 +43,17 @@ namespace AspNetCore.DataProtection.Aws.Tests
             repository.VerifyAll();
         }
 
+        [Fact]
+        public void ExpectValidationOfConfigToThrow()
+        {
+            var configObject = new KmsXmlEncryptorConfig();
+            encryptConfig.Setup(x => x.Value).Returns(configObject);
+
+            var altRepo = new KmsXmlEncryptor(kmsClient.Object, encryptConfig.Object, dpOptions.Object);
+
+            Assert.Throws<ArgumentException>(() => altRepo.ValidateConfig());
+        }
+
         [Theory]
         [InlineData(true, false, null, null)]
         [InlineData(true, false, "appId", "appId")]

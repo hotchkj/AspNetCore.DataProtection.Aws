@@ -71,10 +71,72 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
         }
 
         [Fact]
+        public async Task ExpectNullCustomerMethodStoreRetrieveToSucceed()
+        {
+            config.KeyPrefix = "NullCustomerMethodTesting/";
+            config.ServerSideEncryptionCustomerMethod = null;
+            await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
+
+            var myXml = new XElement(ElementName, ElementContent);
+            var myTestName = "friendly";
+
+            await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
+
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+
+            Assert.Equal(1, list.Count);
+            Assert.True(XNode.DeepEquals(myXml, list.First()));
+        }
+
+        [Fact]
+        public async Task ExpectNullServerSideMethodStoreRetrieveToSucceed()
+        {
+            config.KeyPrefix = "NullServerSideTesting/";
+            config.ServerSideEncryptionMethod = null;
+            await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
+
+            var myXml = new XElement(ElementName, ElementContent);
+            var myTestName = "friendly";
+
+            await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
+
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+
+            Assert.Equal(1, list.Count);
+            Assert.True(XNode.DeepEquals(myXml, list.First()));
+        }
+
+        [Fact]
         public async Task ExpectCompressedStoreRetrieveToSucceed()
         {
             config.KeyPrefix = "CompressTesting/";
             config.ClientSideCompression = true;
+            await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
+
+            var myXml = new XElement(ElementName, ElementContent);
+            var myTestName = "friendly_compressed";
+
+            await xmlRepo.StoreElementAsync(myXml, myTestName, CancellationToken.None);
+
+            IReadOnlyCollection<XElement> list = await xmlRepo.GetAllElementsAsync(CancellationToken.None);
+
+            Assert.Equal(1, list.Count);
+            Assert.True(XNode.DeepEquals(myXml, list.First()));
+        }
+
+        public static IEnumerable<object[]> StorageClasses()
+        {
+            yield return new object[] { null };
+            yield return new object[] { S3StorageClass.ReducedRedundancy };
+            yield return new object[] { S3StorageClass.Standard };
+        }
+
+        [Theory]
+        [MemberData(nameof(StorageClasses))]
+        public async Task ExpectStorageClassStoreRetrieveToSucceed(S3StorageClass storageClass)
+        {
+            config.KeyPrefix = $"StorageClassTesting/{storageClass}/";
+            config.StorageClass = storageClass;
             await s3Cleanup.ClearKeys(BucketName, config.KeyPrefix);
 
             var myXml = new XElement(ElementName, ElementContent);

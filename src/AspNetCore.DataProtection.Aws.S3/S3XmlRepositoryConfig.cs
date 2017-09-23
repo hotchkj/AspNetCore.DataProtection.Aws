@@ -68,6 +68,25 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// Whether the key will be compressed with gzip prior to storage and stored with Content-Encoding: gzip
         /// </summary>
         bool ClientSideCompression { get; }
+
+        /// <summary>
+        /// Each S3 object that represents a key gets a custom metadata entry of the MD5 of the content. If <c>true</c> validate this vs the downloaded blob.
+        /// </summary>
+        /// <remarks>
+        /// The S3 ETag is valid for only some cases of upload and thus the custom metadata provides for additional assurance.
+        /// An MD5 is sent as part of S3's upload validation regardless, which ensures that the data in S3 is uncorrupted.
+        /// </remarks>
+        bool ValidateMd5Metadata { get; }
+
+        /// <summary>
+        /// Each S3 object that represents a key has an ETag. If <c>true</c> try to validate this vs the downloaded blob.
+        /// </summary>
+        /// <remarks>
+        /// The AWS SDK at time of writing performs this check automatically, so it should not normally be necessary to enable this.
+        /// Not all S3 use-cases have an ETag that is a checksum, such as when using KMS server-side encryption.
+        /// Such cases should be skipped automatically even if this is set to <c>true</c>.
+        /// </remarks>
+        bool ValidateETag { get; }
     }
 
     /// <inheritdoc/>
@@ -114,6 +133,8 @@ namespace AspNetCore.DataProtection.Aws.S3
             ServerSideEncryptionCustomerProvidedKeyMd5 = input.ServerSideEncryptionCustomerProvidedKeyMd5;
             ServerSideEncryptionKeyManagementServiceKeyId = input.ServerSideEncryptionKeyManagementServiceKeyId;
             ClientSideCompression = input.ClientSideCompression;
+            ValidateMd5Metadata = input.ValidateMd5Metadata;
+            ValidateETag = input.ValidateETag;
         }
 
         /// <summary>
@@ -130,6 +151,8 @@ namespace AspNetCore.DataProtection.Aws.S3
             ServerSideEncryptionCustomerProvidedKeyMd5 = null;
             ServerSideEncryptionKeyManagementServiceKeyId = null;
             ClientSideCompression = true;
+            ValidateMd5Metadata = true;
+            ValidateETag = false;
         }
 
         /// <inheritdoc/>
@@ -172,6 +195,12 @@ namespace AspNetCore.DataProtection.Aws.S3
 
         /// <inheritdoc/>
         public bool ClientSideCompression { get; set; }
+
+        /// <inheritdoc/>
+        public bool ValidateMd5Metadata { get; set; }
+
+        /// <inheritdoc/>
+        public bool ValidateETag { get; set; }
 
         private string keyPrefix;
 

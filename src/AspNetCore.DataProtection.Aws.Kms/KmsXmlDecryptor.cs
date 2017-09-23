@@ -44,21 +44,19 @@ namespace AspNetCore.DataProtection.Aws.Kms
         }
 
         /// <summary>
-        /// The configuration of how KMS will decrypt the XML data
+        /// Configuration of how KMS will encrypt the XML data
         /// </summary>
-        public IKmsXmlEncryptorConfig Config
+        public IKmsXmlEncryptorConfig Config => config.Value;
+
+        /// <summary>
+        /// Ensure configuration is valid for usage.
+        /// </summary>
+        public void ValidateConfig()
         {
-            get
+            // Microsoft haven't provided for any validation of options as yet, so what was originally a constructor argument must now be validated by hand at runtime (yuck)
+            if (string.IsNullOrWhiteSpace(Config.KeyId))
             {
-                var retVal = config.Value;
-
-                // Microsoft haven't provided for any validation of options as yet, so what was originally a constructor argument must now be validated by hand at runtime (yuck)
-                if (string.IsNullOrWhiteSpace(retVal.KeyId))
-                {
-                    throw new ArgumentException("A key id is required for KMS operation", nameof(retVal.KeyId));
-                }
-
-                return retVal;
+                throw new ArgumentException($"A key id is required in {nameof(IKmsXmlEncryptorConfig)} for KMS operation");
             }
         }
 
@@ -78,8 +76,12 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <param name="encryptedElement">Encrypted XML element.</param>
         /// <param name="ct">Cancellation token.</param>
         /// <returns>Decrypted XML element.</returns>
+#pragma warning disable S3242 // Not altering Microsoft interface definition
         public async Task<XElement> DecryptAsync(XElement encryptedElement, CancellationToken ct)
+#pragma warning restore S3242
         {
+            ValidateConfig();
+
             logger?.LogDebug("Decrypting ciphertext DataProtection key using AWS key {0}", Config.KeyId);
 
             using (var memoryStream = new MemoryStream())

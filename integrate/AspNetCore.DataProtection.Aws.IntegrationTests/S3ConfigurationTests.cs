@@ -47,6 +47,8 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                 Assert.Equal(ServerSideEncryptionMethod.AWSKMS, repo.Config.ServerSideEncryptionMethod);
                 Assert.Equal(false, repo.Config.ClientSideCompression);
                 Assert.Equal(7, repo.Config.MaxS3QueryConcurrency);
+                Assert.Equal(true, repo.Config.ValidateETag);
+                Assert.Equal(false, repo.Config.ValidateMd5Metadata);
             }
         }
     }
