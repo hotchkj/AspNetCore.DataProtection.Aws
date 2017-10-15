@@ -7,9 +7,10 @@ Server keys can be stored in S3 and/or key material encrypted using KMS using:
 - `AspNetCore.DataProtection.Aws.Kms` - KMS encryption key protection
 
 [![Build status](https://ci.appveyor.com/api/projects/status/5k00d5fdfspjv20e/branch/master?svg=true)](https://ci.appveyor.com/project/hotchkj/aspnetcore-dataprotection-aws/branch/master)
+[![SonarQube status](https://sonarcloud.io/api/badges/measure?key=AspNetCore.DataProtection.Aws&metric=coverage)](https://sonarcloud.io/dashboard?id=AspNetCore.DataProtection.Aws)
 [![Coverity status](https://scan.coverity.com/projects/9156/badge.svg)](https://scan.coverity.com/projects/hotchkj-aspnetcore-dataprotection-aws)
 
-With thanks to the Jetbrains team for their open source license of Resharper! SonarQube scans can be found [here](https://sonarqube.com/dashboard?id=AspNetCore.DataProtection.Aws).
+With thanks to the Jetbrains team for their open source license of Resharper!
 This code is open source under the MIT license and not affiliated with Microsoft, Amazon, or any other organisation.
 
 ## S3 Persistence

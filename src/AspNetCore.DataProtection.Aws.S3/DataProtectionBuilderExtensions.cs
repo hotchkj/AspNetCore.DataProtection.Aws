@@ -147,7 +147,7 @@ namespace AspNetCore.DataProtection.Aws.S3
                                                                                        var boundOptions = getOptions(serviceProvider);
                                                                                        return new ConfigureOptions<KeyManagementOptions>(options =>
                                                                                                                                          {
-                                                                                                                                             options.XmlRepository = loggerFactory != null ? new S3XmlRepository(s3Client, boundOptions, loggerFactory) : new S3XmlRepository(s3Client, boundOptions);
+                                                                                                                                             options.XmlRepository = loggerFactory != null ? new S3XmlRepository(s3Client, boundOptions, loggerFactory.CreateLogger<S3XmlRepository>()) : new S3XmlRepository(s3Client, boundOptions);
                                                                                                                                          });
                                                                                    });
             return builder;

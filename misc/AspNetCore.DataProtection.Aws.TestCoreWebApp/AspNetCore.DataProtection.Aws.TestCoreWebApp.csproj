@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AspNetCore.DataProtection.Aws.Kms\AspNetCore.DataProtection.Aws.Kms.csproj" />
+    <ProjectReference Include="..\..\src\AspNetCore.DataProtection.Aws.S3\AspNetCore.DataProtection.Aws.S3.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -43,16 +43,16 @@ namespace AspNetCore.DataProtection.Aws.Kms
         /// <param name="kmsClient">The KMS client</param>
         /// <param name="config">The configuration object specifying which key data in KMS to use</param>
         /// <param name="dpOptions">Main data protection options</param>
-        /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to provide logging infrastructure.</param>
+        /// <param name="logger">An optional <see cref="ILogger"/> to provide logging.</param>
         public KmsXmlEncryptor(IAmazonKeyManagementService kmsClient,
                                IOptions<KmsXmlEncryptorConfig> config,
                                IOptions<DataProtectionOptions> dpOptions,
-                               ILoggerFactory loggerFactory)
+                               ILogger<KmsXmlEncryptor> logger)
         {
             this.kmsClient = kmsClient ?? throw new ArgumentNullException(nameof(kmsClient));
             this.config = config ?? throw new ArgumentNullException(nameof(config));
             this.dpOptions = dpOptions ?? throw new ArgumentNullException(nameof(dpOptions));
-            logger = loggerFactory?.CreateLogger<KmsXmlEncryptor>();
+            this.logger = logger;
         }
 
         /// <summary>

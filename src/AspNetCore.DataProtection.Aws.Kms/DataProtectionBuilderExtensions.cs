@@ -139,7 +139,7 @@ namespace AspNetCore.DataProtection.Aws.Kms
                                                                                        var dpOptions = serviceProvider.GetRequiredService<IOptions<DataProtectionOptions>>();
                                                                                        return new ConfigureOptions<KeyManagementOptions>(options =>
                                                                                                                                          {
-                                                                                                                                             options.XmlEncryptor = loggerFactory != null ? new KmsXmlEncryptor(kmsClient, boundOptions, dpOptions, loggerFactory) : new KmsXmlEncryptor(kmsClient, boundOptions, dpOptions);
+                                                                                                                                             options.XmlEncryptor = loggerFactory != null ? new KmsXmlEncryptor(kmsClient, boundOptions, dpOptions, loggerFactory.CreateLogger<KmsXmlEncryptor>()) : new KmsXmlEncryptor(kmsClient, boundOptions, dpOptions);
                                                                                                                                          });
                                                                                    });
 

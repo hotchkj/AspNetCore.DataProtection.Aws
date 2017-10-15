@@ -71,9 +71,9 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// </summary>
         /// <param name="s3Client">The S3 client.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to provide logging infrastructure.</param>
-        public S3XmlRepository(IAmazonS3 s3Client, IOptions<S3XmlRepositoryConfig> config, ILoggerFactory loggerFactory)
-            : this(s3Client, config, loggerFactory, new MockingWrapper())
+        /// <param name="logger">An optional <see cref="ILogger"/> to provide logging.</param>
+        public S3XmlRepository(IAmazonS3 s3Client, IOptions<S3XmlRepositoryConfig> config, ILogger<S3XmlRepository> logger)
+            : this(s3Client, config, logger, new MockingWrapper())
         {
         }
 
@@ -82,13 +82,13 @@ namespace AspNetCore.DataProtection.Aws.S3
         /// </summary>
         /// <param name="s3Client">The S3 client.</param>
         /// <param name="config">The configuration object specifying how to write to S3.</param>
-        /// <param name="loggerFactory">An optional <see cref="ILoggerFactory"/> to provide logging infrastructure.</param>
+        /// <param name="logger">An optional <see cref="ILogger"/> to provide logging.</param>
         /// <param name="mockWrapper">Wrapper object to ensure unit testing is feasible.</param>
-        public S3XmlRepository(IAmazonS3 s3Client, IOptions<S3XmlRepositoryConfig> config, ILoggerFactory loggerFactory, IMockingWrapper mockWrapper)
+        public S3XmlRepository(IAmazonS3 s3Client, IOptions<S3XmlRepositoryConfig> config, ILogger<S3XmlRepository> logger, IMockingWrapper mockWrapper)
         {
             this.s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
             this.config = config ?? throw new ArgumentNullException(nameof(config));
-            logger = loggerFactory?.CreateLogger<S3XmlRepository>();
+            this.logger = logger;
             this.mockWrapper = mockWrapper;
         }
 
