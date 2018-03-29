@@ -41,7 +41,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             s3Client.Dispose();
         }
 
-        public async Task PrepareLargeQueryTest()
+        internal async Task PrepareLargeQueryTest()
         {
             config.KeyPrefix = "LargeQueryTest/";
 

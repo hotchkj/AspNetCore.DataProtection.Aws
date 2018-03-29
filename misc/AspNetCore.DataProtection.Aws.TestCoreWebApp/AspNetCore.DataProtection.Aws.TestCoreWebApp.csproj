@@ -2,10 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <!-- Disable analyzer warning since AWS SDK has incorrect versioning behaviour -->
+    <!-- 1701;1702;1705 are Microsoft advice - cargo culting -->
+    <NoWarn>1701;1702;1705;IDE1002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
   </ItemGroup>
 
   <ItemGroup>

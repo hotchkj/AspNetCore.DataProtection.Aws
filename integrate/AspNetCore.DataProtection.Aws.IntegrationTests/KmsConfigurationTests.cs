@@ -43,8 +43,10 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                 Assert.Contains("someContext", encryptor.Config.EncryptionContext.Keys);
                 Assert.Equal("someContextValue", encryptor.Config.EncryptionContext["someContext"]);
                 Assert.Contains("someToken", encryptor.Config.GrantTokens);
+#pragma warning disable xUnit2004 // Do not use equality check to test for boolean conditions
                 Assert.Equal(false, encryptor.Config.DiscriminatorAsContext);
                 Assert.Equal(false, encryptor.Config.HashDiscriminatorContext);
+#pragma warning restore xUnit2004
             }
         }
     }

@@ -44,7 +44,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
             serviceProvider.Setup(x => x.GetService(typeof(IAmazonKeyManagementService)))
                            .Returns(kmsClient.Object);
             serviceProvider.Setup(x => x.GetService(typeof(ILoggerFactory)))
-                           .Returns(null);
+                           .Returns(null as ILoggerFactory);
 
             decryptor = new KmsXmlDecryptor(serviceProvider.Object);
         }

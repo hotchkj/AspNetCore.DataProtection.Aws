@@ -39,7 +39,9 @@ namespace AspNetCore.DataProtection.Aws.Tests
             snapshot = repository.Create<IOptions<S3XmlRepositoryConfig>>();
         }
 
+#pragma warning disable xUnit1013 // Public method should be marked as test
         public void Dispose()
+#pragma warning restore xUnit1013
         {
             repository.VerifyAll();
         }
