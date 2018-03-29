@@ -8,6 +8,7 @@
     <!-- 1701;1702;1705 are Microsoft advice - cargo culting -->
     <NoWarn>1701;1702;1705;IDE1002</NoWarn>
     <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    <SonarQubeExclude>true</SonarQubeExclude>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
