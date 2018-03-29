@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core DataProtection encrypter &amp; decrypter for use with AWS KMS</Description>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>2.0.1</VersionPrefix>
     <Authors>hotchkj</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>AspNetCore.DataProtection.Aws.Kms</AssemblyName>
@@ -15,6 +15,8 @@
     <PackageReleaseNotes>Supports ASP.NET Core 2.0
 Allows configuration via ASP.NET Configuration Binding
 Integrates with DataProtection Application Discriminator
+PDBs now embedded &amp; source linked
+Semantic versioning included in dependencies
 
 Breaking changes:
 Requires NET Standard 2.0 and ASP.NET Core 2.0
@@ -29,6 +31,8 @@ Application ID no longer part of KMS Encryptor configuration - see README for mi
     <!-- Disable analyzer warning since AWS SDK has incorrect versioning behaviour -->
     <!-- 1701;1702;1705 are Microsoft advice - cargo culting -->
     <NoWarn>1701;1702;1705;IDE1002</NoWarn>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>Embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -43,10 +47,10 @@ Application ID no longer part of KMS Encryptor configuration - see README for mi
 
   <ItemGroup>
     <DotNetCliToolReference Include="dotnet-sourcelink-git" Version="2.2.1" />
-    <PackageReference Include="SourceLink.Create.GitHub" Version="2.2.1" PrivateAssets="all" />
-    <PackageReference Include="AWSSDK.KeyManagementService" Version="3.3.3.1" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="2.0.0" />
+    <PackageReference Include="SourceLink.Create.GitHub" Version="2.8.0" PrivateAssets="all" />
+    <PackageReference Include="AWSSDK.KeyManagementService" Version="[3.3.5.2, 4.0.0)" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="[2.0.2, 3.0.0)" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.0.2, 3.0.0)" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2017 Jeff Hotchkiss
+﻿// Copyright(c) 2018 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
             s3Client.Dispose();
         }
 
-        public async Task PrepareLargeQueryTest()
+        internal async Task PrepareLargeQueryTest()
         {
             config.KeyPrefix = "LargeQueryTest/";
 

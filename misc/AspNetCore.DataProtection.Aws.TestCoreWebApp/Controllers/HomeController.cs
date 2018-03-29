@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2017 Jeff Hotchkiss
+﻿// Copyright(c) 2018 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using System;
 using System.Diagnostics;

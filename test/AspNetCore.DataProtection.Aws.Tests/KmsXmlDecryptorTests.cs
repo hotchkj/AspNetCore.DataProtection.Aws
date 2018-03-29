@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2017 Jeff Hotchkiss
+﻿// Copyright(c) 2018 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace AspNetCore.DataProtection.Aws.Tests
             serviceProvider.Setup(x => x.GetService(typeof(IAmazonKeyManagementService)))
                            .Returns(kmsClient.Object);
             serviceProvider.Setup(x => x.GetService(typeof(ILoggerFactory)))
-                           .Returns(null);
+                           .Returns(null as ILoggerFactory);
 
             decryptor = new KmsXmlDecryptor(serviceProvider.Object);
         }

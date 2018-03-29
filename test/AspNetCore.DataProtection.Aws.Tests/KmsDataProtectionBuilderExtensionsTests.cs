@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2017 Jeff Hotchkiss
+﻿// Copyright(c) 2018 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using System;
 using System.Collections.Generic;
@@ -40,7 +40,9 @@ namespace AspNetCore.DataProtection.Aws.Tests
             dpSnapshot = repository.Create<IOptions<DataProtectionOptions>>();
         }
 
+#pragma warning disable xUnit1013 // Public method should be marked as test
         public void Dispose()
+#pragma warning restore xUnit1013
         {
             repository.VerifyAll();
         }

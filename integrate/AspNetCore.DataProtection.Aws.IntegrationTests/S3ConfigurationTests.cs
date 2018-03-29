@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2017 Jeff Hotchkiss
+﻿// Copyright(c) 2018 Jeff Hotchkiss
 // Licensed under the MIT License. See License.md in the project root for license information.
 using Amazon.S3;
 using AspNetCore.DataProtection.Aws.S3;
@@ -45,10 +45,12 @@ namespace AspNetCore.DataProtection.Aws.IntegrationTests
                 Assert.Equal("provKeyMd5", repo.Config.ServerSideEncryptionCustomerProvidedKeyMd5);
                 Assert.Equal("servKeyId", repo.Config.ServerSideEncryptionKeyManagementServiceKeyId);
                 Assert.Equal(ServerSideEncryptionMethod.AWSKMS, repo.Config.ServerSideEncryptionMethod);
-                Assert.Equal(false, repo.Config.ClientSideCompression);
                 Assert.Equal(7, repo.Config.MaxS3QueryConcurrency);
+#pragma warning disable xUnit2004 // Do not use equality check to test for boolean conditions
+                Assert.Equal(false, repo.Config.ClientSideCompression);
                 Assert.Equal(true, repo.Config.ValidateETag);
                 Assert.Equal(false, repo.Config.ValidateMd5Metadata);
+#pragma warning restore xUnit2004
             }
         }
     }
