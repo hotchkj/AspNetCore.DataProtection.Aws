@@ -48,6 +48,7 @@ public void ConfigureServices(IServiceCollection services)
     services.AddDataProtection()
             .SetApplicationName("my-application-name") // Not required by S3 storage but a requirement for server farms
             .PersistKeysToAwsS3(Configuration.GetSection("myS3XmlStorageConfiguration"));
+            // You may wish to configure internal encryption of the key material via a ProtectKeysWithX config entry, or use S3 encryption
 }
 
 // Example using direct options & SDK instantiation
@@ -109,6 +110,7 @@ public void ConfigureServices(IServiceCollection services)
     // Assumes a Configuration property set as IConfigurationRoot similar to ASP.NET docs
     services.AddDataProtection()
             .SetApplicationName("my-application-name") // If populated, this will be used as part of the KMS encryption context to add security
+            // You will need to specify some suitable persistence of the key material via a PersistKeysToX entry
             .ProtectKeysWithAwsKms(Configuration.GetSection("mykmsXmlEncryptionConfiguration"));
 }
 
