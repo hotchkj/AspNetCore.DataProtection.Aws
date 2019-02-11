@@ -81,6 +81,14 @@ public void ConfigureServices(IServiceCollection services)
 S3 bucket name _must_ be specified. All other options have standard server-side secure defaults. If the `IAmazonS3` interface is discoverable
 via `IServiceCollection`, the argument of `AmazonS3Client` can be omitted.
 
+### Required Permissions
+
+If you're using Infrastructure as Code, like CloudFormation, or Terraform, you'll bound to need the exact permissions for the bucket. These are needed:
+
+ * `s3:GetObject`
+ * `s3:ListBucket`
+ * `s3:PutObject`
+
 ## KMS Cryptography
 
 [![Nuget](https://img.shields.io/nuget/v/AspNetCore.DataProtection.Aws.Kms.svg)](https://www.nuget.org/packages/AspNetCore.DataProtection.Aws.Kms)
