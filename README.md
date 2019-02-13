@@ -83,7 +83,7 @@ via `IServiceCollection`, the argument of `AmazonS3Client` can be omitted.
 
 ### Required Permissions
 
-If you're using Infrastructure as Code, like CloudFormation, or Terraform, you'll bound to need the exact permissions for the bucket. These are needed:
+If you're using Infrastructure as Code, like CloudFormation, or Terraform, you're bound to need the exact permissions for the bucket. These are needed:
 
  * `s3:GetObject`
  * `s3:ListBucket`
