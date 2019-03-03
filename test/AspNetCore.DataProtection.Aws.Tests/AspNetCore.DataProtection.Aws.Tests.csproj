@@ -2,14 +2,15 @@
 
   <PropertyGroup>
     <Authors>hotchkj</Authors>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
     <IsPackable>false</IsPackable>
     <!-- Disable analyzer warning since AWS SDK has incorrect versioning behaviour -->
     <!-- 1701;1702;1705 are Microsoft advice - cargo culting -->
     <NoWarn>1701;1702;1705;IDE1002</NoWarn>
     <SonarQubeExclude>true</SonarQubeExclude>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp2.0|AnyCPU'">
@@ -38,12 +39,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeCoverage" Version="1.0.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="2.0.1" />
-    <PackageReference Include="Moq" Version="4.8.2" />
-    <PackageReference Include="xunit" Version="2.3.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="Microsoft.CodeCoverage" Version="16.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="2.2.0" />
+    <PackageReference Include="Moq" Version="4.10.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
