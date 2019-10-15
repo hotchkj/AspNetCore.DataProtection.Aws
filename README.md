@@ -10,13 +10,11 @@ Server keys can be stored in S3 and/or key material encrypted using KMS using:
 [![SonarQube Status](https://sonarcloud.io/api/project_badges/measure?project=AspNetCore.DataProtection.Aws&metric=alert_status)](https://sonarcloud.io/dashboard?id=AspNetCore.DataProtection.Aws)
 [![Coverity status](https://scan.coverity.com/projects/9156/badge.svg)](https://scan.coverity.com/projects/hotchkj-aspnetcore-dataprotection-aws)
 
-With thanks to the Jetbrains team for their open source license of Resharper!
 This code is open source under the MIT license and not affiliated with Microsoft, Amazon, or any other organisation.
 
 ## S3 Persistence
 
 [![Nuget](https://img.shields.io/nuget/v/AspNetCore.DataProtection.Aws.S3.svg)](https://www.nuget.org/packages/AspNetCore.DataProtection.Aws.S3)
-[![Nuget](https://img.shields.io/nuget/vpre/AspNetCore.DataProtection.Aws.S3.svg)](https://www.nuget.org/packages/AspNetCore.DataProtection.Aws.S3)
 ![Downloads](https://img.shields.io/nuget/dt/AspNetCore.DataProtection.Aws.S3.svg)
 
 By default, ASP.NET Core Data Protection stores encryption keys locally, causing issues with key mismatches across server farms. S3 can be used to provide XML key file storage instead of a shared
@@ -92,7 +90,6 @@ If you're using Infrastructure as Code, like CloudFormation, or Terraform, you'r
 ## KMS Cryptography
 
 [![Nuget](https://img.shields.io/nuget/v/AspNetCore.DataProtection.Aws.Kms.svg)](https://www.nuget.org/packages/AspNetCore.DataProtection.Aws.Kms)
-[![Nuget](https://img.shields.io/nuget/vpre/AspNetCore.DataProtection.Aws.Kms.svg)](https://www.nuget.org/packages/AspNetCore.DataProtection.Aws.Kms)
 ![Downloads](https://img.shields.io/nuget/dt/AspNetCore.DataProtection.Aws.Kms.svg)
 
 Default options for ASP.NET data encryption are bound to certificates or Windows-specific DPAPI constructs. AWS Key Management Service
