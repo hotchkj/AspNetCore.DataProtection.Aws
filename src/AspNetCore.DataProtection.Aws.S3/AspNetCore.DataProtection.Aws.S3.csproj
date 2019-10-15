@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core DataProtection repository for use with AWS S3</Description>
-    <VersionPrefix>2.1.0</VersionPrefix>
+    <VersionPrefix>2.2.0</VersionPrefix>
     <Authors>hotchkj</Authors>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <AssemblyName>AspNetCore.DataProtection.Aws.S3</AssemblyName>
