@@ -12,13 +12,13 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>AspNetCore.DataProtection.Aws.S3</PackageId>
     <PackageTags>ASP.NET;AWS;DataProtection;netcore</PackageTags>
-    <PackageReleaseNotes>Supports ASP.NET Core 2.2
+    <PackageReleaseNotes>Supports ASP.NET Core 2.2 and ASP.NET Core 3.0
 Allows configuration via ASP.NET Configuration Binding
 PDBs now embedded &amp; source linked
 Semantic versioning included in dependencies, restricted to minimums only
 
 Breaking changes:
-Requires NET Standard 2.0 and ASP.NET Core 2.0
+Requires NET Standard 2.0 and ASP.NET Core 2.0, or ASP.NET Core 3.0
     </PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/hotchkj/AspNetCore.DataProtection.Aws</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
