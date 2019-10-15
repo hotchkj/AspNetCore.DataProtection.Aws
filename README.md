@@ -8,7 +8,6 @@ Server keys can be stored in S3 and/or key material encrypted using KMS using:
 
 [![Build status](https://ci.appveyor.com/api/projects/status/5k00d5fdfspjv20e/branch/master?svg=true)](https://ci.appveyor.com/project/hotchkj/aspnetcore-dataprotection-aws/branch/master)
 [![SonarQube Status](https://sonarcloud.io/api/project_badges/measure?project=AspNetCore.DataProtection.Aws&metric=alert_status)](https://sonarcloud.io/dashboard?id=AspNetCore.DataProtection.Aws)
-[![Coverity status](https://scan.coverity.com/projects/9156/badge.svg)](https://scan.coverity.com/projects/hotchkj-aspnetcore-dataprotection-aws)
 
 This code is open source under the MIT license and not affiliated with Microsoft, Amazon, or any other organisation.
 
@@ -130,7 +129,7 @@ public void ConfigureServices(IServiceCollection services)
     kmsConfig.DiscriminatorAsContext = true;
     // Encryption contexts can be viewed in logs; if the discriminator is sensitive, hash before use as a context value
     kmsConfig.HashDiscriminatorContext = true;
-
+147680
     services.AddDataProtection()
             .SetApplicationName("my-application-name") // If populated & DiscriminatorAsContext = true, this will be used as part of the KMS encryption context
             .ProtectKeysWithAwsKms(new AmazonKeyManagementServiceClient(), kmsConfig);
