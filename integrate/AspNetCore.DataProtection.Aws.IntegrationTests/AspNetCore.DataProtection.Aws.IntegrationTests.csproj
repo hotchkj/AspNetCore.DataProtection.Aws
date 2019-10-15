@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Authors>hotchkj</Authors>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net461;netcoreapp3.0</TargetFrameworks>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <IsPackable>false</IsPackable>
     <!-- Disable analyzer warning since AWS SDK has incorrect versioning behaviour -->
@@ -43,8 +43,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeCoverage" Version="16.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Moq" Version="4.10.1" />
     <PackageReference Include="Nito.AsyncEx.Coordination" Version="1.0.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -57,6 +55,17 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0'">
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
