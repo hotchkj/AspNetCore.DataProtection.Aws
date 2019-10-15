@@ -23,7 +23,7 @@ Requires NET Standard 2.0 and ASP.NET Core 2.0
 Application ID no longer part of KMS Encryptor configuration - see README for migration notes
     </PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/hotchkj/AspNetCore.DataProtection.Aws</PackageProjectUrl>
-    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/hotchkj/AspNetCore.DataProtection.Aws</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
