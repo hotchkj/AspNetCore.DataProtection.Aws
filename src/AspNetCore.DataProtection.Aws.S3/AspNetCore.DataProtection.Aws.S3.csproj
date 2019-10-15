@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core DataProtection repository for use with AWS S3</Description>
-    <VersionPrefix>2.1.0</VersionPrefix>
+    <VersionPrefix>2.2.0</VersionPrefix>
     <Authors>hotchkj</Authors>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <AssemblyName>AspNetCore.DataProtection.Aws.S3</AssemblyName>
     <OutputType>Library</OutputType>
     <AssemblyOriginatorKeyFile>../../shared.snk</AssemblyOriginatorKeyFile>
@@ -12,16 +12,16 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>AspNetCore.DataProtection.Aws.S3</PackageId>
     <PackageTags>ASP.NET;AWS;DataProtection;netcore</PackageTags>
-    <PackageReleaseNotes>Supports ASP.NET Core 2.2
+    <PackageReleaseNotes>Supports ASP.NET Core 2.2 and ASP.NET Core 3.0
 Allows configuration via ASP.NET Configuration Binding
 PDBs now embedded &amp; source linked
 Semantic versioning included in dependencies, restricted to minimums only
 
 Breaking changes:
-Requires NET Standard 2.0 and ASP.NET Core 2.0
+Requires NET Standard 2.0 and ASP.NET Core 2.0, or ASP.NET Core 3.0
     </PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/hotchkj/AspNetCore.DataProtection.Aws</PackageProjectUrl>
-    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/hotchkj/AspNetCore.DataProtection.Aws</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -47,8 +47,15 @@ Requires NET Standard 2.0 and ASP.NET Core 2.0
     <DotNetCliToolReference Include="dotnet-sourcelink-git" Version="2.2.1" />
     <PackageReference Include="SourceLink.Create.GitHub" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="AWSSDK.S3" Version="[3.3.31.20,)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0'">
     <PackageReference Include="Microsoft.AspNetCore" Version="[2.2.0,)" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.2.0,)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>
