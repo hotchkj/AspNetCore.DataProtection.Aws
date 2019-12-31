@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using Xunit;
+
+[assembly: AssemblyTrait("Category", "SkipWhenLiveUnitTesting")]
 
 namespace AspNetCore.DataProtection.Aws.IntegrationTests
 {

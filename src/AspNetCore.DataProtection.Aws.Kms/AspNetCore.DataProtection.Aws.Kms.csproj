@@ -27,7 +27,6 @@ Application ID no longer part of KMS Encryptor configuration - see README for mi
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/hotchkj/AspNetCore.DataProtection.Aws</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <SourceLinkCreate>true</SourceLinkCreate>
     <!-- Disable analyzer warning since AWS SDK has incorrect versioning behaviour -->
     <!-- 1701;1702;1705 are Microsoft advice - cargo culting -->
     <NoWarn>1701;1702;1705;IDE1002</NoWarn>
@@ -46,8 +45,7 @@ Application ID no longer part of KMS Encryptor configuration - see README for mi
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-sourcelink-git" Version="2.2.1" />
-    <PackageReference Include="SourceLink.Create.GitHub" Version="2.8.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all" />
     <PackageReference Include="AWSSDK.KeyManagementService" Version="[3.3.7.21,)" />
   </ItemGroup>
 
