@@ -80,11 +80,11 @@ via `IServiceCollection`, the argument of `AmazonS3Client` can be omitted.
 
 ### Required Permissions
 
-If you're using Infrastructure as Code, like CloudFormation, or Terraform, you're bound to need the exact permissions for the bucket. These are needed:
+If you're using Infrastructure as Code, like CloudFormation, or Terraform, you will need the exact permissions for the bucket. These are needed:
 
- * `s3:GetObject`
- * `s3:ListBucket`
- * `s3:PutObject`
+- `s3:GetObject`
+- `s3:ListBucket`
+- `s3:PutObject`
 
 ## KMS Cryptography
 
@@ -144,3 +144,13 @@ allowing/preventing cross-talk between applications.
 To ensure correct operation against existing data encrypted with `1.0`, include `SetApplicationName`, set `DiscriminatorAsContext` to `true` and
 `HashDiscriminatorContext` to `false` when setting up Data Protection for matching functionality. If these values need to differ, the above can instead be
 created as a custom context with key of `KmsConstants.ApplicationEncryptionContextKey`.
+
+## Building
+
+Prerequisites for building & testing:
+
+- NET Core SDK 3.1
+- NET Core SDK 2.2
+- NET Core SDK 1.1
+
+Integration tests require AWS access, or modifying to access your own copy of AWS resources.

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{851F9F19-EAF9-4C8C-81CD-0C89D4083928}"
 EndProject
@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integrate", "integrate", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{A790615F-8CB3-4A46-AB22-C20A6A26E797}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{5A57EC30-6914-4114-89C6-40AFA6AB50BA}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore.DataProtection.Aws.S3", "src\AspNetCore.DataProtection.Aws.S3\AspNetCore.DataProtection.Aws.S3.csproj", "{A36A5D31-F6F5-4594-8326-1B5FF5877E8A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore.DataProtection.Aws.IntegrationTests", "integrate\AspNetCore.DataProtection.Aws.IntegrationTests\AspNetCore.DataProtection.Aws.IntegrationTests.csproj", "{D19EBBF5-FA0E-4EC5-A11F-9B5AC1165B39}"
@@ -24,8 +26,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore.DataProtection.Aws.Tests", "test\AspNetCore.DataProtection.Aws.Tests\AspNetCore.DataProtection.Aws.Tests.csproj", "{37914C81-00E7-4FE5-887C-795E9DE81463}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore.DataProtection.Aws.Kms", "src\AspNetCore.DataProtection.Aws.Kms\AspNetCore.DataProtection.Aws.Kms.csproj", "{405C524A-E843-43EB-8164-60976E3A4DF1}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{5A57EC30-6914-4114-89C6-40AFA6AB50BA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore.DataProtection.Aws.CreateV1Data", "misc\AspNetCore.DataProtection.Aws.CreateV1Data\AspNetCore.DataProtection.Aws.CreateV1Data.csproj", "{7767C4E6-AF81-4D63-9ADD-3C13AFBC20B6}"
 EndProject
