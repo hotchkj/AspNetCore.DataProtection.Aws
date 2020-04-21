@@ -1,5 +1,12 @@
 # AspNetCore.DataProtection.Aws
 
+**DEPRECATED**
+
+AWS now actively maintain their own [implementation](https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet) of this functionality.
+Consumers are encouraged to switch over to this.
+
+## Archived Instructions
+
 Amazon Web Services integration for ASP.NET Core data protection.
 Server keys can be stored in S3 and/or key material encrypted using KMS using:
 
